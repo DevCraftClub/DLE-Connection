@@ -7,9 +7,7 @@
 <div class="dc-conn-nf-item{% if not is_visible %} is-hidden{% endif %}{% if is_current %} is-focus{% endif %}"
 	{% if is_current %}data-dc-conn-nf-current="1"{% endif %}
 	{% if item.news_id is defined %}data-news-id="{{ item.news_id }}"{% endif %}>
-	<span class="dd-handles dc-conn-nf-drag" data-drag="item" title="{{ 'Перетащить'|trans }}" aria-label="{{ 'Перетащить'|trans }}">
-		<img src="{{ assets_base }}/drag-handle.svg" alt="" width="14" height="14">
-	</span>
+	<span class="dd-handles dc-conn-nf-drag" data-drag="item" title="{{ 'Перетащить'|trans }}" aria-label="{{ 'Перетащить'|trans }}"></span>
 	<span class="dc-conn-nf-thumb" aria-hidden="true"></span>
 	<div class="dc-conn-nf-item-body">
 		<div class="dc-conn-nf-item-title">{{ item.news_title|default(news_title|default('')) }}</div>

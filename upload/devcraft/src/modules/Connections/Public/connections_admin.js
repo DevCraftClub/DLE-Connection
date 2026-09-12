@@ -587,7 +587,7 @@
 
 	/**
 	 * DnD как у DLE #rubriclist / .dd-handles: SortableJS (public/js/sortable.js).
-	 * Ручка — span.dd-handles (не button: native drag с <button> в браузерах ломается).
+	 * Сборки — .dc-conn-nf-col-drag; новости — .dc-conn-nf-drag (разные handle, иначе nested DnD конфликтует).
 	 */
 	NewsFormDraft.prototype.bindSortables = function () {
 		var self = this;
@@ -602,13 +602,39 @@
 			return;
 		}
 		this._sortableWait = 0;
+
+		var listEl = this.$list.get(0);
+		if (listEl) {
+			self.sortables.push(new Sortable(listEl, {
+				animation: 150,
+				handle: '.dc-conn-nf-col-drag',
+				draggable: '.dc-conn-nf-collection',
+				ghostClass: 'dc-conn-nf-ghost',
+				chosenClass: 'sortable-chosen',
+				forceFallback: true,
+				fallbackOnBody: true,
+				fallbackTolerance: 3,
+				onChoose: function (evt) {
+					if (evt.item) {
+						evt.item.classList.add('is-sorting');
+					}
+				},
+				onEnd: function (evt) {
+					if (evt.item) {
+						evt.item.classList.remove('is-sorting');
+					}
+					self.applyMembershipOrder();
+					self.syncInput();
+				},
+			}));
+		}
+
 		this.$list.find('[data-dc-conn-nf-items]').each(function () {
 			var treeEl = this;
 			var key = $(treeEl).closest('[data-row-key]').attr('data-row-key') || '';
-			/* Как xfields.php rubric_sort: new Sortable(..., handle: '.dd-handles'). */
 			var inst = new Sortable(treeEl, {
 				animation: 150,
-				handle: '.dd-handles',
+				handle: '.dc-conn-nf-drag',
 				draggable: '.dc-conn-nf-item',
 				ghostClass: 'dc-conn-nf-ghost',
 				chosenClass: 'sortable-chosen',
@@ -630,6 +656,29 @@
 			});
 			self.sortables.push(inst);
 		});
+	};
+
+	/**
+	 * Порядок DOM сборок → snapshot.memberships.
+	 */
+	NewsFormDraft.prototype.applyMembershipOrder = function () {
+		var self = this;
+		var byKey = {};
+		this.snapshot.memberships.forEach(function (m) {
+			byKey[self.rowKey(m)] = m;
+		});
+		var next = [];
+		this.$list.children('.dc-conn-nf-collection').each(function () {
+			var key = this.getAttribute('data-row-key') || '';
+			if (byKey[key]) {
+				next.push(byKey[key]);
+				delete byKey[key];
+			}
+		});
+		Object.keys(byKey).forEach(function (key) {
+			next.push(byKey[key]);
+		});
+		this.snapshot.memberships = next;
 	};
 
 	/**
