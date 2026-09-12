@@ -419,6 +419,9 @@
 			if (action === 'edit-type') {
 				self.editRelationType(key, newsId);
 			}
+			if (action === 'edit-comment') {
+				self.editRelationComment(key, newsId);
+			}
 			if (action === 'rename') {
 				self.renameCollection(key);
 			}
@@ -526,10 +529,12 @@
 				var newsEl = itemFrag.querySelector('[data-dc-conn-nf-news-title]');
 				var metaRow = itemFrag.querySelector('[data-dc-conn-nf-meta-row]');
 				var metaEl = itemFrag.querySelector('[data-dc-conn-nf-meta]');
+				var commentEl = itemFrag.querySelector('[data-dc-conn-nf-comment]');
 				var openEl = itemFrag.querySelector('[data-dc-conn-nf-open]');
 				var eyeEl = itemFrag.querySelector('[data-dc-conn-nf-eye]');
 				var toggleBtn = itemFrag.querySelector('[data-dc-conn-nf-vis-btn]');
 				var meta = entry.is_current ? '' : String(entry.relation_type || '').trim();
+				var comment = entry.is_current ? '' : String(entry.comment || '').trim();
 				var nid = parseInt(entry.news_id, 10) || 0;
 				var visSrc = self.assets + '/' + (entry.is_visible ? 'visibility-on.svg' : 'visibility-off.svg');
 
@@ -540,6 +545,7 @@
 						itemRoot.setAttribute('data-dc-conn-nf-current', '1');
 					}
 					itemRoot.setAttribute('data-news-id', String(nid));
+					itemRoot.setAttribute('data-comment', comment);
 				}
 				if (newsEl) newsEl.textContent = entry.news_title || '';
 				/* Текущая новость не имеет типа связи к себе — скрываем meta-row. */
@@ -547,11 +553,18 @@
 					if (metaRow) {
 						metaRow.remove();
 					}
+					if (commentEl) {
+						commentEl.remove();
+					}
 				} else if (metaEl) {
 					metaEl.textContent = meta || t('Тип связи не задан');
 					metaEl.classList.toggle('is-empty', !meta);
 					metaEl.setAttribute('data-action', 'edit-type');
 					metaEl.setAttribute('title', t('Тип связи'));
+				}
+				if (commentEl && !entry.is_current) {
+					commentEl.textContent = comment;
+					commentEl.hidden = !comment;
 				}
 				if (openEl) {
 					if (nid > 0 && self.editNewsUrl) {
@@ -769,6 +782,7 @@
 			items.push({
 				news_id: this.newsId > 0 ? this.newsId : 0,
 				relation_type: '',
+				comment: '',
 				is_visible: membership.is_visible !== undefined ? !!membership.is_visible : true,
 			});
 			membership.items = items;
@@ -788,8 +802,8 @@
 			}
 			items.push({
 				news_id: nid,
-				/* Текущая новость не имеет типа связи к себе. */
 				relation_type: isCurrent ? '' : (item.relation_type || ''),
+				comment: isCurrent ? '' : (item.comment || ''),
 				is_visible: isCurrent
 					? (membership.is_visible !== undefined ? !!membership.is_visible : !!item.is_visible)
 					: (item.is_visible !== undefined ? !!item.is_visible : true),
@@ -800,6 +814,7 @@
 			items.push({
 				news_id: this.newsId > 0 ? this.newsId : 0,
 				relation_type: '',
+				comment: '',
 				is_visible: membership.is_visible !== undefined ? !!membership.is_visible : true,
 			});
 		}
@@ -857,6 +872,7 @@
 					? newsTitle
 					: (row.news_title || titleById[String(nid)] || ('#' + nid)),
 				relation_type: isCurrent ? '' : (row.relation_type || ''),
+				comment: isCurrent ? '' : (row.comment || ''),
 				is_visible: row.is_visible !== undefined ? !!row.is_visible : true,
 				is_current: isCurrent,
 			};
@@ -1250,7 +1266,7 @@
 		if (this.isCurrentNewsId(entry.news_id)) {
 			return;
 		}
-		var options = [{ value: '', label: t('— без типа —') }].concat(
+		var options = [{ value: '', label: t('— без типа (подавить auto) —') }].concat(
 			this.types.map(function (tp) {
 				return { value: tp.name, label: tp.name };
 			})
@@ -1259,20 +1275,34 @@
 			entry.relation_type = String(val).trim();
 			self.commit();
 		};
-		if (this.types.length) {
-			selectDialog(t('Тип связи'), t('Тип'), options, entry.relation_type || '').then(function (val) {
-				if (val === null) {
-					return;
-				}
-				apply(val);
-			});
+		if (!this.types.length) {
+			notify(t('Сначала создайте типы связей в модуле Connections'), 'warning');
 			return;
 		}
-		promptText(t('Тип связи'), entry.relation_type || '', t('Тип связи'), true).then(function (next) {
+		selectDialog(t('Тип связи'), t('Тип'), options, entry.relation_type || '').then(function (val) {
+			if (val === null) {
+				return;
+			}
+			apply(val);
+		});
+	};
+
+	NewsFormDraft.prototype.editRelationComment = function (key, newsId) {
+		var self = this;
+		var m = this.findMembership(key);
+		if (!m) {
+			return;
+		}
+		var entry = this.findMembershipItem(m, newsId);
+		if (!entry || this.isCurrentNewsId(entry.news_id)) {
+			return;
+		}
+		promptText(t('Комментарий к связи'), entry.comment || '', t('Комментарий'), true).then(function (next) {
 			if (next === null) {
 				return;
 			}
-			apply(next);
+			entry.comment = String(next).trim();
+			self.commit();
 		});
 	};
 

@@ -24,8 +24,12 @@ final class CollectionTypesHandler implements AjaxHandlerInterface {
 			return match($action) {
 				'list' => JsonResponse::ok(['items' => $service->list()]),
 				'create' => JsonResponse::toast(__('Категория создана'), [
-					'id'   => ($type = $service->create((string) ($request->data['name'] ?? '')))->id(),
+					'id'   => ($type = $service->create(
+						(string) ($request->data['name'] ?? ''),
+						isset($request->data['slug']) ? (string) $request->data['slug'] : null,
+					))->id(),
 					'name' => $type->name,
+					'slug' => $type->slug,
 				]),
 				'update' => $this->update($service, $request),
 				'delete' => $this->delete($service, $request),
@@ -45,11 +49,16 @@ final class CollectionTypesHandler implements AjaxHandlerInterface {
 			return JsonResponse::fail(__('Ошибка'), __('Категория сборки не найдена'), 'error', 404);
 		}
 
-		$service->update($type, (string) ($request->data['name'] ?? ''));
+		$service->update(
+			$type,
+			(string) ($request->data['name'] ?? ''),
+			array_key_exists('slug', $request->data) ? (string) $request->data['slug'] : null,
+		);
 
 		return JsonResponse::toast(__('Категория сохранена'), [
 			'id'   => $type->id(),
 			'name' => $type->name,
+			'slug' => $type->slug,
 		]);
 	}
 

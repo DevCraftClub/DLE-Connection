@@ -1,4 +1,4 @@
-<li class="dc-conn-collection expanded" data-collection-id="{{ col.id }}" data-type-id="{{ col.type_id|default(0) }}">
+<li class="dc-conn-collection expanded" data-collection-id="{{ col.id }}" data-type-id="{{ col.type_id|default(0) }}" data-context-news-id="{{ col.context_news_id|default(0) }}" data-is-sequential="{{ col.is_sequential|default(true) ? '1' : '0' }}">
 	<div class="dc-conn-collection-head">
 		<button type="button" class="button cycle outline dc-conn-icon-btn dc-conn-drag" data-drag="collection" title="{{ 'Перетащить'|trans }}">
 			<img src="{{ assets_base }}/drag-handle.svg" alt="" width="16" height="16">
@@ -6,6 +6,9 @@
 		<span class="dc-conn-title">{{ col.title }}</span>
 		<button type="button" class="button small outline dc-conn-type-chip" data-action="set-collection-type" title="{{ 'Категория сборки'|trans }}">
 			{{ col.type_name|default('Без категории'|trans) }}
+		</button>
+		<button type="button" class="button small outline dc-conn-seq-chip" data-action="toggle-sequential" title="{{ 'Последовательная сборка'|trans }}">
+			{{ col.is_sequential|default(true) ? ('Последовательная'|trans) : ('Произвольная'|trans) }}
 		</button>
 		<span class="dc-conn-actions">
 			<button type="button" class="button cycle outline dc-conn-icon-btn" data-action="save-collection" title="{{ 'Сохранить сборку'|trans }}">

@@ -26,6 +26,13 @@ final class ConnectionCollectionTypeRepository extends AbstractRepository {
 		return $entity;
 	}
 
+	public function findOneBySlug(string $slug): ?ConnectionCollectionType {
+		/** @var ConnectionCollectionType|null $entity */
+		$entity = $this->select()->where('slug', $slug)->fetchOne();
+
+		return $entity;
+	}
+
 	/**
 	 * @return list<ConnectionCollectionType>
 	 */

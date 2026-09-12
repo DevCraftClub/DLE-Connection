@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace DevCraft\Modules\Connections\Services;
 
-use DevCraft\Modules\Connections\Models\ConnectionItem;
+use DevCraft\Modules\Connections\Models\ConnectionPairRelation;
 
 /**
  * Публичный вывод связей для полной новости.
@@ -13,19 +13,48 @@ final class PublicTreeService {
 
 	public function __construct(
 		private readonly CollectionService $collections = new CollectionService(),
+		private readonly RelationResolutionService $resolver = new RelationResolutionService(),
+		private readonly PairRelationService $pairs = new PairRelationService(),
 	) {}
 
 	/**
 	 * Сборки, где есть $newsId: без текущей новости, только visible, пустые убрать.
-	 * Тип связи: явный `relation_type` или автоматически по порядку относительно текущей новости.
 	 *
-	 * @param list<int> $typeInclude  whitelist type_id (пусто = без whitelist)
-	 * @param list<int> $typeExclude  blacklist type_id
-	 * @return list<array{id:int, title:string, description:?string, type_id:int, items:list<array<string, mixed>>}>
+	 * @param list<int>   $typeInclude   whitelist type_id (пусто = без whitelist)
+	 * @param list<int>   $typeExclude   blacklist type_id
+	 * @param string|null $categorySlug  если задан — только категория с этим slug (исключает type_id=0)
+	 * @return list<array{
+	 *     id:int,
+	 *     title:string,
+	 *     description:?string,
+	 *     type_id:int,
+	 *     category_slug:?string,
+	 *     is_sequential:bool,
+	 *     sort_order:int,
+	 *     items:list<array<string, mixed>>
+	 * }>
 	 */
-	public function forNews(int $newsId, array $typeInclude = [], array $typeExclude = []): array {
+	public function forNews(
+		int $newsId,
+		array $typeInclude = [],
+		array $typeExclude = [],
+		?string $categorySlug = null,
+	): array {
 		if($newsId <= 0) {
 			return [];
+		}
+
+		$slugFilter = $categorySlug !== null ? trim($categorySlug) : '';
+		$slugTypeId = null;
+
+		if($slugFilter !== '') {
+			$type = (new CollectionTypeService())->repo()->findOneBySlug($slugFilter);
+
+			if($type === null) {
+				return [];
+			}
+
+			$slugTypeId = $type->id();
 		}
 
 		$focusSortByCollection = [];
@@ -60,19 +89,28 @@ final class PublicTreeService {
 			return [];
 		}
 
-		$posts = NewsLookupService::postsByIds($newsIds);
-		$tree  = [];
+		$collectionIds = array_keys($byCollection);
+		$pairMap       = $this->pairs->repo()->mapForFocus($collectionIds, $newsId);
+		$typeSlugMap   = (new CollectionTypeService())->slugMap();
+		$posts         = NewsLookupService::postsByIds($newsIds);
+		$tree          = [];
 
 		foreach($this->collections->collectionsRepo()->findAllOrdered() as $collection) {
 			$colId  = $collection->id();
 			$typeId = (int) ($collection->type_id ?? 0);
 
-			if($typeInclude !== [] && !in_array($typeId, $typeInclude, true)) {
-				continue;
-			}
+			if($slugTypeId !== null) {
+				if($typeId !== $slugTypeId) {
+					continue;
+				}
+			} else {
+				if($typeInclude !== [] && !in_array($typeId, $typeInclude, true)) {
+					continue;
+				}
 
-			if($typeExclude !== [] && in_array($typeId, $typeExclude, true)) {
-				continue;
+				if($typeExclude !== [] && in_array($typeId, $typeExclude, true)) {
+					continue;
+				}
 			}
 
 			if(!isset($byCollection[$colId]) || $byCollection[$colId] === []) {
@@ -80,7 +118,12 @@ final class PublicTreeService {
 			}
 
 			$focusSort = $focusSortByCollection[$colId] ?? null;
-			$rowItems  = [];
+
+			if($focusSort === null) {
+				continue;
+			}
+
+			$rowItems = [];
 
 			foreach($byCollection[$colId] as $item) {
 				$post = $posts[$item->news_id] ?? null;
@@ -89,6 +132,15 @@ final class PublicTreeService {
 					continue;
 				}
 
+				/** @var ConnectionPairRelation|null $pair */
+				$pair     = $pairMap[$colId][$item->news_id] ?? null;
+				$resolved = $this->resolver->resolve(
+					$pair,
+					(bool) $collection->is_sequential,
+					$focusSort,
+					$item->sort_order,
+				);
+
 				$rowItems[] = [
 					'id'            => $item->id(),
 					'news_id'       => $item->news_id,
@@ -96,7 +148,8 @@ final class PublicTreeService {
 					'alt_name'      => $post['alt_name'],
 					'category'      => $post['category'],
 					'date'          => $post['date'],
-					'relation_type' => $this->resolveRelationLabel($item, $focusSort),
+					'relation_type' => $resolved['relation_type'],
+					'comment'       => $resolved['comment'],
 				];
 			}
 
@@ -105,40 +158,18 @@ final class PublicTreeService {
 			}
 
 			$tree[] = [
-				'id'          => $colId,
-				'title'       => $collection->title,
-				'description' => $collection->description,
-				'type_id'     => $typeId,
-				'items'       => $rowItems,
+				'id'             => $colId,
+				'title'          => $collection->title,
+				'description'    => $collection->description,
+				'type_id'        => $typeId,
+				'category_slug'  => $typeId > 0 ? ($typeSlugMap[$typeId] ?? null) : null,
+				'is_sequential'  => (bool) $collection->is_sequential,
+				'sort_order'     => $collection->sort_order,
+				'items'          => $rowItems,
 			];
 		}
 
 		return $tree;
-	}
-
-	/**
-	 * Явный тип (Приквел / Спин-офф) или авто: раньше в порядке → Предыстория, позже → Продолжение.
-	 */
-	private function resolveRelationLabel(ConnectionItem $item, ?int $focusSort): string {
-		$stored = trim($item->relation_type);
-
-		if($stored !== '') {
-			return $stored;
-		}
-
-		if($focusSort === null) {
-			return '';
-		}
-
-		if($item->sort_order < $focusSort) {
-			return __('Предыстория');
-		}
-
-		if($item->sort_order > $focusSort) {
-			return __('Продолжение');
-		}
-
-		return '';
 	}
 
 }

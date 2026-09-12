@@ -55,14 +55,20 @@ final class CollectionService {
 		return $title;
 	}
 
-	public function create(string $title, ?string $description = null, int $typeId = 0): ConnectionCollection {
-		$collection              = new ConnectionCollection();
-		$collection->title       = $this->validateTitle($title);
-		$collection->description = $description !== null && trim($description) !== ''
+	public function create(
+		string $title,
+		?string $description = null,
+		int $typeId = 0,
+		bool $isSequential = true,
+	): ConnectionCollection {
+		$collection                = new ConnectionCollection();
+		$collection->title         = $this->validateTitle($title);
+		$collection->description   = $description !== null && trim($description) !== ''
 			? trim($description)
 			: null;
-		$collection->type_id     = (new CollectionTypeService())->normalizeTypeId($typeId);
-		$collection->sort_order  = $this->collectionsRepo()->nextSortOrder();
+		$collection->type_id       = (new CollectionTypeService())->normalizeTypeId($typeId);
+		$collection->is_sequential = $isSequential;
+		$collection->sort_order    = $this->collectionsRepo()->nextSortOrder();
 		$this->collectionsRepo()->saveEntity($collection);
 
 		return $collection;
@@ -73,6 +79,7 @@ final class CollectionService {
 		string $title,
 		?string $description = null,
 		?int $typeId = null,
+		?bool $isSequential = null,
 	): ConnectionCollection {
 		$collection->title       = $this->validateTitle($title);
 		$collection->description = $description !== null && trim($description) !== ''
@@ -81,6 +88,10 @@ final class CollectionService {
 
 		if($typeId !== null) {
 			$collection->type_id = (new CollectionTypeService())->normalizeTypeId($typeId);
+		}
+
+		if($isSequential !== null) {
+			$collection->is_sequential = $isSequential;
 		}
 
 		$this->collectionsRepo()->saveEntity($collection);
@@ -108,6 +119,7 @@ final class CollectionService {
 
 	public function delete(ConnectionCollection $collection): void {
 		$id = $collection->id();
+		(new PairRelationService($this))->repo()->deleteByCollection($id);
 		$this->itemsRepo()->deleteByCollection($id);
 		$this->collectionsRepo()->deleteEntity($collection);
 	}
@@ -135,6 +147,7 @@ final class CollectionService {
 			$source->title . ' (' . __('копия') . ')',
 			$source->description,
 			$source->type_id,
+			$source->is_sequential,
 		);
 
 		foreach($this->itemsRepo()->findByCollection($source->id()) as $item) {
@@ -155,41 +168,83 @@ final class CollectionService {
 	 *
 	 * @return list<array<string, mixed>>
 	 */
-	public function tree(?int $focusNewsId = null): array {
+	public function tree(?int $focusNewsId = null, ?array $contextByCollection = null): array {
 		$newsTitles = [];
 		$typeNames  = (new CollectionTypeService())->nameMap();
+		$pairs      = new PairRelationService($this);
 		$tree       = [];
 
 		foreach($this->collectionsRepo()->findAllOrdered() as $collection) {
-			$items  = [];
-			$typeId = (int) $collection->type_id;
+			$items      = [];
+			$typeId     = (int) $collection->type_id;
+			$colId      = $collection->id();
+			$memberIds  = [];
 
-			foreach($this->itemsRepo()->findByCollection($collection->id()) as $item) {
+			foreach($this->itemsRepo()->findByCollection($colId) as $item) {
+				$memberIds[] = $item->news_id;
+			}
+
+			$contextNewsId = null;
+			$forced        = is_array($contextByCollection)
+				? (int) ($contextByCollection[$colId] ?? $contextByCollection[(string) $colId] ?? 0)
+				: 0;
+
+			if($forced > 0 && in_array($forced, $memberIds, true)) {
+				$contextNewsId = $forced;
+			} elseif($focusNewsId !== null && $focusNewsId > 0 && in_array($focusNewsId, $memberIds, true)) {
+				$contextNewsId = $focusNewsId;
+			} elseif($memberIds !== []) {
+				$contextNewsId = $memberIds[0];
+			}
+
+			$pairByTo = [];
+
+			if($contextNewsId !== null) {
+				foreach($pairs->repo()->findByCollectionFrom($colId, $contextNewsId) as $pair) {
+					$pairByTo[$pair->to_news_id] = $pair;
+				}
+			}
+
+			foreach($this->itemsRepo()->findByCollection($colId) as $item) {
 				$newsId = $item->news_id;
 
 				if(!isset($newsTitles[$newsId])) {
 					$newsTitles[$newsId] = NewsLookupService::titleById($newsId);
 				}
 
+				$isContext = $contextNewsId !== null && $newsId === $contextNewsId;
+				$pair      = $pairByTo[$newsId] ?? null;
+				$rtype     = '';
+				$comment   = '';
+
+				if(!$isContext && $pair !== null) {
+					$rtype   = $pair->relation_type;
+					$comment = $pair->comment;
+				}
+
 				$items[] = [
 					'id'            => $item->id(),
 					'news_id'       => $newsId,
 					'news_title'    => $newsTitles[$newsId],
-					'relation_type' => $item->relation_type,
+					'relation_type' => $rtype,
+					'comment'       => $comment,
 					'is_visible'    => $item->is_visible,
 					'sort_order'    => $item->sort_order,
 					'is_focus'      => $focusNewsId !== null && $focusNewsId === $newsId,
+					'is_context'    => $isContext,
 				];
 			}
 
 			$tree[] = [
-				'id'          => $collection->id(),
-				'title'       => $collection->title,
-				'description' => $collection->description,
-				'type_id'     => $typeId,
-				'type_name'   => $typeId > 0 ? ($typeNames[$typeId] ?? null) : null,
-				'sort_order'  => $collection->sort_order,
-				'items'       => $items,
+				'id'              => $colId,
+				'title'           => $collection->title,
+				'description'     => $collection->description,
+				'type_id'         => $typeId,
+				'type_name'       => $typeId > 0 ? ($typeNames[$typeId] ?? null) : null,
+				'is_sequential'   => (bool) $collection->is_sequential,
+				'sort_order'      => $collection->sort_order,
+				'context_news_id' => $contextNewsId,
+				'items'           => $items,
 			];
 		}
 

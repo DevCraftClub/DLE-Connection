@@ -29,6 +29,9 @@ final class SaveCollectionHandler implements AjaxHandlerInterface {
 			$typeId      = array_key_exists('type_id', $request->data)
 				? (int) $request->data['type_id']
 				: null;
+			$isSequential = array_key_exists('is_sequential', $request->data)
+				? !empty($request->data['is_sequential'])
+				: null;
 
 			if($id > 0) {
 				$collection = $service->collectionsRepo()->findOneById($id);
@@ -37,7 +40,7 @@ final class SaveCollectionHandler implements AjaxHandlerInterface {
 					return JsonResponse::fail(__('Ошибка'), __('Сборка не найдена'), 'error', 404);
 				}
 
-				$service->update($collection, $title, $description, $typeId);
+				$service->update($collection, $title, $description, $typeId, $isSequential);
 			} else {
 				$newsId = (int) ($request->data['news_id'] ?? 0);
 
@@ -54,14 +57,20 @@ final class SaveCollectionHandler implements AjaxHandlerInterface {
 					return JsonResponse::fail(__('Ошибка'), __('Новость не найдена'), 'error', 404);
 				}
 
-				$collection = $service->create($title, $description, $typeId ?? 0);
+				$collection = $service->create(
+					$title,
+					$description,
+					$typeId ?? 0,
+					$isSequential ?? true,
+				);
 				(new ItemService($service))->add($collection->id(), $newsId);
 			}
 
 			return JsonResponse::toast(__('Сборка сохранена'), [
-				'id'      => $collection->id(),
-				'title'   => $collection->title,
-				'type_id' => $collection->type_id,
+				'id'             => $collection->id(),
+				'title'          => $collection->title,
+				'type_id'        => $collection->type_id,
+				'is_sequential'  => $collection->is_sequential,
 			]);
 		} catch(Throwable $e) {
 			return JsonResponse::fail(__('Ошибка'), $e->getMessage(), 'error', 400);

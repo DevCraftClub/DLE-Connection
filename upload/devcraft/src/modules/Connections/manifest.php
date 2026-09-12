@@ -25,6 +25,7 @@ use DevCraft\Modules\Connections\Ajax\ReorderItemsHandler;
 use DevCraft\Modules\Connections\Ajax\ToggleItemVisibilityHandler;
 use DevCraft\Modules\Connections\Ajax\SearchNewsHandler;
 use DevCraft\Modules\Connections\Ajax\RelationTypesHandler;
+use DevCraft\Modules\Connections\Ajax\PairRelationHandler;
 
 /**
  * Манифест модуля Connections.
@@ -35,7 +36,7 @@ return ModuleManifestBuilder::create()
 	->mod(ConnectionsIdentity::mod())
 	->code(ConnectionsIdentity::code())
 	->name('Connections')
-	->version('210.1.0')
+	->version('210.2.0')
 	->description(__('Взаимосвязь между новостями'))
 	->icon('mif-blockchain')
 	->docsLink('https://readme.devcraft.club/dev/connections/')
@@ -62,6 +63,7 @@ return ModuleManifestBuilder::create()
 				'search_news'            => SearchNewsHandler::class,
 				'relation_types'         => RelationTypesHandler::class,
 				'collection_types'       => CollectionTypesHandler::class,
+				'pair_relations'         => PairRelationHandler::class,
 			])
 	)
 	->changelog(require DLEPlugins::Check(__DIR__ . '/changelog.data.php'))

@@ -7,6 +7,7 @@ namespace DevCraft\Modules\Connections\Controller;
 use DevCraft\Core\Application;
 use DevCraft\Modules\Connections\Services\CollectionService;
 use DevCraft\Modules\Connections\Services\NewsLookupService;
+use DevCraft\Modules\Connections\Services\PairRelationService;
 use DevCraft\Modules\Connections\Services\RelationTypeService;
 use DevCraft\Modules\Connections\Services\TreeViewService;
 
@@ -175,12 +176,18 @@ final class NewsFormController {
 						'news_title'    => $isCurrent && $newsTitle !== ''
 							? $newsTitle
 							: (string) ($item['news_title'] ?? ''),
-						/* Текущая новость не имеет типа связи к себе. */
 						'relation_type' => $isCurrent
 							? ''
 							: (string) (
 								(is_array($override) ? ($override['relation_type'] ?? null) : null)
 								?? $item['relation_type']
+								?? ''
+							),
+						'comment'       => $isCurrent
+							? ''
+							: (string) (
+								(is_array($override) ? ($override['comment'] ?? null) : null)
+								?? $item['comment']
 								?? ''
 							),
 						'is_visible'    => (bool) (
@@ -238,10 +245,24 @@ final class NewsFormController {
 				$colItems = [];
 
 				foreach($collections->itemsRepo()->findByCollection($item->collection_id) as $row) {
+					$pair = null;
+
+					if($row->news_id !== $newsId) {
+						$pair = (new PairRelationService($collections))->repo()->findByCollectionFromTo(
+							$item->collection_id,
+							$newsId,
+							$row->news_id,
+						);
+					}
+
 					$colItems[] = [
 						'news_id'       => $row->news_id,
-						/* Текущая новость не имеет типа связи к себе. */
-						'relation_type' => $row->news_id === $newsId ? '' : $row->relation_type,
+						'relation_type' => $row->news_id === $newsId
+							? ''
+							: ($pair !== null ? $pair->relation_type : ''),
+						'comment'       => $row->news_id === $newsId
+							? ''
+							: ($pair !== null ? $pair->comment : ''),
 						'is_visible'    => $row->is_visible,
 					];
 				}

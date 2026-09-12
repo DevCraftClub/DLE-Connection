@@ -14,10 +14,16 @@ final class FullstoryController {
 	/**
 	 * Рендерит HTML через DLE $tpl (list.tpl / item.tpl).
 	 *
-	 * @param string|null $typeInclude  whitelist id типов сборок через `,` (сырая строка include)
-	 * @param string|null $typeExclude  blacklist id типов сборок через `,`
+	 * @param string|null $typeInclude    whitelist id типов сборок через `,`
+	 * @param string|null $typeExclude    blacklist id типов сборок через `,`
+	 * @param string|null $categorySlug   canon filter; alias handled in show_connections.php
 	 */
-	public function render(int $newsId, ?string $typeInclude = null, ?string $typeExclude = null): string {
+	public function render(
+		int $newsId,
+		?string $typeInclude = null,
+		?string $typeExclude = null,
+		?string $categorySlug = null,
+	): string {
 		global $tpl, $config;
 
 		if($newsId <= 0) {
@@ -28,6 +34,7 @@ final class FullstoryController {
 			$newsId,
 			self::parseIdList($typeInclude),
 			self::parseIdList($typeExclude),
+			$categorySlug,
 		);
 
 		if($tree === []) {
@@ -59,6 +66,7 @@ final class FullstoryController {
 				$tpl->set('{title}', htmlspecialchars((string) $item['title'], ENT_QUOTES, 'UTF-8'));
 				$tpl->set('{news-id}', (string) (int) $item['news_id']);
 				$tpl->set('{relation-type}', htmlspecialchars((string) $item['relation_type'], ENT_QUOTES, 'UTF-8'));
+				$tpl->set('{comment}', htmlspecialchars((string) ($item['comment'] ?? ''), ENT_QUOTES, 'UTF-8'));
 				$tpl->set('{alt-name}', htmlspecialchars((string) $item['alt_name'], ENT_QUOTES, 'UTF-8'));
 				$tpl->set('{category}', htmlspecialchars((string) $item['category'], ENT_QUOTES, 'UTF-8'));
 				$tpl->set('{date}', htmlspecialchars((string) $item['date'], ENT_QUOTES, 'UTF-8'));
@@ -69,7 +77,16 @@ final class FullstoryController {
 			$tpl->result['dc_conn_list'] = '';
 			$tpl->load_template($base . 'list.tpl');
 			$tpl->set('{collection-title}', htmlspecialchars((string) $collection['title'], ENT_QUOTES, 'UTF-8'));
-			$tpl->set('{collection-description}', htmlspecialchars((string) ($collection['description'] ?? ''), ENT_QUOTES, 'UTF-8'));
+			$tpl->set(
+				'{collection-description}',
+				htmlspecialchars((string) ($collection['description'] ?? ''), ENT_QUOTES, 'UTF-8'),
+			);
+			$tpl->set(
+				'{category-slug}',
+				htmlspecialchars((string) ($collection['category_slug'] ?? ''), ENT_QUOTES, 'UTF-8'),
+			);
+			$tpl->set('{is-sequential}', !empty($collection['is_sequential']) ? '1' : '0');
+			$tpl->set('{sort-order}', (string) (int) ($collection['sort_order'] ?? 0));
 			$tpl->set('{items}', $collectionItems);
 			$tpl->compile('dc_conn_list');
 			$itemsHtml .= (string) ($tpl->result['dc_conn_list'] ?? '');
@@ -79,8 +96,6 @@ final class FullstoryController {
 	}
 
 	/**
-	 * Разбирает список id через запятую / пробел.
-	 *
 	 * @return list<int>
 	 */
 	private static function parseIdList(?string $raw): array {

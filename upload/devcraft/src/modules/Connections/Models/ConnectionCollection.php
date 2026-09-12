@@ -32,6 +32,10 @@ class ConnectionCollection extends AbstractEntity {
 	#[Column(type: 'integer', unsigned: true, default: 0)]
 	public int $type_id = 0;
 
+	/** Порядок → авто-метки Предыстория/Продолжение при отсутствии пары. */
+	#[Column(type: 'boolean', default: true)]
+	public bool $is_sequential = true;
+
 	#[Column(type: 'integer', unsigned: true, default: 0)]
 	public int $sort_order = 0;
 

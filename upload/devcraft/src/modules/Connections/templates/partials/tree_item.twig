@@ -1,31 +1,44 @@
 {% set vis_svg = item.is_visible ? 'visibility-on.svg' : 'visibility-off.svg' %}
 {% set vis_title = item.is_visible ? ('Скрыть'|trans) : ('Показать'|trans) %}
 {% set meta = item.relation_type|default('')|trim %}
-<li class="dc-conn-item{% if not item.is_visible %} is-hidden{% endif %}{% if item.is_focus %} is-focus{% endif %}"
+{% set comment = item.comment|default('')|trim %}
+{% set is_context = item.is_context|default(false) %}
+<li class="dc-conn-item{% if not item.is_visible %} is-hidden{% endif %}{% if item.is_focus %} is-focus{% endif %}{% if is_context %} is-context{% endif %}"
 	data-item-id="{{ item.id }}"
-	data-news-id="{{ item.news_id }}">
-	{# Ручка DnD в том же стиле, что и остальные icon-btn (без drag-item-marker). #}
+	data-news-id="{{ item.news_id }}"
+	data-comment="{{ comment|e('html_attr') }}">
 	<button type="button" class="button cycle outline dc-conn-icon-btn dc-conn-drag" data-drag="item" title="{{ 'Перетащить'|trans }}">
 		<img src="{{ assets_base }}/drag-handle.svg" alt="" width="16" height="16">
 	</button>
 	<span class="dc-conn-thumb" aria-hidden="true"></span>
 	<span class="dc-conn-item-body">
-		<span class="dc-conn-item-title">{{ item.news_title|default('#' ~ item.news_id) }}</span>
+		<span class="dc-conn-item-title">{{ item.news_title|default('#' ~ item.news_id) }}{% if is_context %} <em class="dc-conn-context-mark">({{ 'контекст'|trans }})</em>{% endif %}</span>
+		{% if not is_context %}
 		<span class="dc-conn-item-meta-row">
 			{% if meta %}
 				<span class="dc-conn-item-meta">{{ meta }}</span>
 			{% else %}
 				<span class="dc-conn-item-meta is-empty">{{ 'Тип связи не задан'|trans }}</span>
 			{% endif %}
+			{% if comment %}
+				<span class="dc-conn-item-comment" title="{{ comment }}">{{ comment }}</span>
+			{% endif %}
 			<button type="button" class="button cycle outline dc-conn-icon-btn" data-action="edit-item-type" title="{{ 'Тип связи'|trans }}">
 				<img src="{{ assets_base }}/select.svg" alt="" width="16" height="16">
 			</button>
+			<button type="button" class="button cycle outline dc-conn-icon-btn" data-action="edit-item-comment" title="{{ 'Комментарий'|trans }}">
+				<img src="{{ assets_base }}/rename.svg" alt="" width="16" height="16">
+			</button>
 		</span>
+		{% endif %}
 	</span>
 	<span class="dc-conn-actions">
 		{% if item.news_id|default(0) > 0 and admin_edit_news_url|default('') %}
 			<a class="button cycle outline dc-conn-icon-btn" href="{{ admin_edit_news_url|replace({'__ID__': item.news_id ~ ''}) }}" target="_blank" rel="noopener noreferrer" title="{{ 'Открыть в админке'|trans }}"><img src="{{ assets_base }}/open-news.svg" alt="" width="16" height="16"></a>
 		{% endif %}
+		<button type="button" class="button cycle outline dc-conn-icon-btn" data-action="set-context" title="{{ 'Сделать контекстом'|trans }}">
+			<img src="{{ assets_base }}/select.svg" alt="" width="16" height="16">
+		</button>
 		<button type="button" class="button cycle outline dc-conn-icon-btn" data-action="replace-news" title="{{ 'Сменить новость'|trans }}">
 			<img src="{{ assets_base }}/search-news.svg" alt="" width="16" height="16">
 		</button>

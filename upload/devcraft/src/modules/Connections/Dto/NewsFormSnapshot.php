@@ -136,7 +136,7 @@ final class NewsFormSnapshot {
 	}
 
 	/**
-	 * @return list<array{news_id:int, relation_type:string, is_visible:bool, news_title?:string}>
+	 * @return list<array{news_id:int, relation_type:string, is_visible:bool, comment:string, news_title?:string}>
 	 */
 	private static function parseItems(mixed $raw, string $fallbackType, bool $fallbackVisible): array {
 		if(!is_array($raw) || $raw === []) {
@@ -167,6 +167,9 @@ final class NewsFormSnapshot {
 				'is_visible'    => array_key_exists('is_visible', $row)
 					? (bool) $row['is_visible']
 					: $fallbackVisible,
+				'comment'       => array_key_exists('comment', $row)
+					? trim((string) $row['comment'])
+					: '',
 			];
 			$title = trim((string) ($row['news_title'] ?? ''));
 

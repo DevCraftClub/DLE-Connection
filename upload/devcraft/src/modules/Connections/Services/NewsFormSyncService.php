@@ -15,6 +15,7 @@ final class NewsFormSyncService {
 	public function __construct(
 		private readonly CollectionService $collections = new CollectionService(),
 		private readonly ItemService $items = new ItemService(),
+		private readonly PairRelationService $pairs = new PairRelationService(),
 	) {}
 
 	/**
@@ -58,7 +59,7 @@ final class NewsFormSyncService {
 			$currentMeta = $this->resolveCurrentMeta($membership, $newsId);
 
 			$resolvedCollectionIds[$collectionId] = [
-				'relation_type' => $currentMeta['relation_type'],
+				'relation_type' => '',
 				'is_visible'    => $currentMeta['is_visible'],
 				'sort_index'    => $order++,
 				'items'         => $membership['items'] ?? [],
@@ -83,13 +84,13 @@ final class NewsFormSyncService {
 				$item = $this->items->add(
 					$collectionId,
 					$newsId,
-					$meta['relation_type'],
+					'',
 					$meta['is_visible'],
 				);
 			} else {
 				$this->items->update(
 					$item,
-					$meta['relation_type'],
+					'',
 					$meta['is_visible'],
 				);
 			}
@@ -114,23 +115,32 @@ final class NewsFormSyncService {
 				);
 
 				if($sibling === null) {
-					$this->items->add(
+					$sibling = $this->items->add(
 						$collectionId,
 						$siblingNewsId,
-						(string) ($row['relation_type'] ?? ''),
+						'',
 						(bool) ($row['is_visible'] ?? true),
 					);
-					continue;
+				} else {
+					$this->items->update(
+						$sibling,
+						'',
+						(bool) ($row['is_visible'] ?? true),
+					);
 				}
 
-				$this->items->update(
-					$sibling,
-					(string) ($row['relation_type'] ?? ''),
-					(bool) ($row['is_visible'] ?? true),
-				);
+				/* Пара N→sibling; пустой type — явный override. */
+				if(array_key_exists('relation_type', $row) || array_key_exists('comment', $row)) {
+					$this->pairs->upsert(
+						$collectionId,
+						$newsId,
+						$siblingNewsId,
+						(string) ($row['relation_type'] ?? ''),
+						(string) ($row['comment'] ?? ''),
+					);
+				}
 			}
 
-			/* Порядок элементов сборки из снимка (DnD на вкладке). */
 			$sortRows = [];
 
 			foreach($meta['items'] as $row) {
@@ -169,7 +179,7 @@ final class NewsFormSyncService {
 	 * @param array{
 	 *     relation_type:string,
 	 *     is_visible:bool,
-	 *     items?:list<array{news_id:int, relation_type:string, is_visible:bool}>
+	 *     items?:list<array{news_id:int, relation_type:string, is_visible:bool, comment?:string}>
 	 * } $membership
 	 * @return array{relation_type:string, is_visible:bool}
 	 */
@@ -183,7 +193,6 @@ final class NewsFormSyncService {
 
 			if($rowNewsId === $newsId || ($newsId > 0 && $rowNewsId === 0)) {
 				return [
-					/* Текущая новость не имеет типа связи к себе. */
 					'relation_type' => '',
 					'is_visible'    => (bool) ($row['is_visible'] ?? true),
 				];

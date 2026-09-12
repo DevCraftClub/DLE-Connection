@@ -5,6 +5,18 @@ declare(strict_types=1);
 use DevCraft\Builders\ChangelogBuilder;
 
 return [
+	ChangelogBuilder::create('210.2.0')
+		->date('2026-09-12')
+		->added([
+			__('Контекстные направленные пары связей (from→to) с комментарием'),
+			__('Авто-метки Предыстория/Продолжение для последовательных сборок'),
+			__('Slug категорий сборок и фильтр category_slug в публичном include'),
+			__('Флаг «последовательная» сборка (is_sequential)'),
+		])
+		->changed([
+			__('Публичный вывод больше не использует статический item.relation_type'),
+		])
+		->build(),
 	ChangelogBuilder::create('210.1.0')
 		->date('2026-09-12')
 		->added([

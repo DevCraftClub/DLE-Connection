@@ -317,11 +317,22 @@
 		/* Категории сборок (type_id) и типы связей элементов — разные справочники. */
 		this.relationTypes = parseJsonAttr(root, 'data-dc-conn-relation-types', []);
 		this.collectionTypes = parseJsonAttr(root, 'data-dc-conn-collection-types', []);
+		this.contexts = {};
 		this.collectionsEl = root.querySelector('[data-dc-conn-collections]');
+		this.syncContextsFromTree();
 		this.bind();
 		this.bindTreeview();
 		this.bindDrag();
 	}
+
+	ConnectionsUI.prototype.syncContextsFromTree = function () {
+		var self = this;
+		(this.tree || []).forEach(function (col) {
+			if (col.context_news_id) {
+				self.contexts[col.id] = col.context_news_id;
+			}
+		});
+	};
 
 	ConnectionsUI.prototype.bind = function () {
 		var self = this;
@@ -352,6 +363,13 @@
 			if (action === 'delete-item') self.deleteItem(itemId);
 			if (action === 'toggle-item') self.toggleItem(itemId);
 			if (action === 'edit-item-type') self.editItemType(itemId);
+			if (action === 'edit-item-comment') self.editItemComment(itemId);
+			if (action === 'set-context') self.setItemContext(itemId);
+			if (action === 'toggle-sequential') {
+				var colEl = e.target.closest('[data-collection-id]');
+				var cid = colEl ? parseInt(colEl.getAttribute('data-collection-id'), 10) : 0;
+				if (cid) self.toggleSequential(cid);
+			}
 		});
 	};
 
@@ -397,11 +415,12 @@
 
 	ConnectionsUI.prototype.reload = function () {
 		var self = this;
-		return post('tree', {}).then(function (payload) {
+		return post('tree', { contexts: this.contexts || {} }).then(function (payload) {
 			var data = payload && payload.data ? payload.data : {};
 			self.tree = data.tree || [];
 			self.relationTypes = data.relation_types || self.relationTypes;
 			self.collectionTypes = data.collection_types || self.collectionTypes;
+			self.syncContextsFromTree();
 			if (typeof data.html === 'string') {
 				self.applyTreeHtml(data.html);
 			}
@@ -684,11 +703,74 @@
 
 	ConnectionsUI.prototype.editItemType = function (id) {
 		var self = this;
-		this.pickRelationType().then(function (rtype) {
+		var found = this.findItem(id);
+		if (!found) return;
+		var col = this.tree.find(function (c) { return c.id === found.collectionId; });
+		var fromId = (col && col.context_news_id) || (this.contexts[found.collectionId]) || 0;
+		if (!fromId) {
+			fromId = found.item.news_id;
+		}
+		if (fromId === found.item.news_id) {
+			return;
+		}
+		var currentComment = found.item.comment || '';
+		this.pickRelationType(found.item.relation_type || '').then(function (rtype) {
 			if (rtype === null) return;
-			return post('save_item', { id: id, relation_type: rtype }).then(function () {
+			return post('pair_relations', {
+				action: 'upsert',
+				collection_id: found.collectionId,
+				from_news_id: fromId,
+				to_news_id: found.item.news_id,
+				relation_type: rtype,
+				comment: currentComment,
+			}).then(function () {
 				return self.reload();
 			});
+		});
+	};
+
+	ConnectionsUI.prototype.editItemComment = function (id) {
+		var self = this;
+		var found = this.findItem(id);
+		if (!found) return;
+		var col = this.tree.find(function (c) { return c.id === found.collectionId; });
+		var fromId = (col && col.context_news_id) || (this.contexts[found.collectionId]) || 0;
+		if (!fromId || fromId === found.item.news_id) return;
+		askText(t('Комментарий к связи'), t('Комментарий'), found.item.comment || '').then(function (comment) {
+			if (comment === null) return;
+			return post('pair_relations', {
+				action: 'upsert',
+				collection_id: found.collectionId,
+				from_news_id: fromId,
+				to_news_id: found.item.news_id,
+				relation_type: found.item.relation_type || '',
+				comment: comment,
+			}).then(function () {
+				return self.reload();
+			});
+		});
+	};
+
+	ConnectionsUI.prototype.setItemContext = function (id) {
+		var found = this.findItem(id);
+		if (!found) return;
+		this.contexts[found.collectionId] = found.item.news_id;
+		return this.reload();
+	};
+
+	ConnectionsUI.prototype.toggleSequential = function (collectionId) {
+		var self = this;
+		var col = this.tree.find(function (c) { return c.id === collectionId; });
+		if (!col) return;
+		var next = !col.is_sequential;
+		return post('save_collection', {
+			id: collectionId,
+			title: col.title,
+			description: col.description || '',
+			type_id: col.type_id || 0,
+			is_sequential: next ? 1 : 0,
+		}).then(function () {
+			return self.reload();
 		});
 	};
 
@@ -797,8 +879,9 @@
 		});
 	};
 
-	ConnectionsUI.prototype.pickRelationType = function () {
-		var options = [{ value: '', label: t('— без типа —') }].concat(
+	ConnectionsUI.prototype.pickRelationType = function (current) {
+		var selected = current == null ? '' : String(current);
+		var options = [{ value: '', label: t('— без типа (подавить auto) —') }].concat(
 			(this.relationTypes || []).map(function (type) {
 				return { value: type.name, label: type.name };
 			})
@@ -807,7 +890,7 @@
 			t('Тип связи'),
 			t('Тип'),
 			options,
-			'',
+			selected,
 			t('Выбрать'),
 			'dc-conn-tpl-select-relation',
 			'dc-conn-select-relation'
@@ -898,6 +981,7 @@
 		}
 		this.root.addEventListener('click', function (e) {
 			var rename = e.target.closest('[data-dc-conn-ctype-rename]');
+			var slugBtn = e.target.closest('[data-dc-conn-ctype-slug]');
 			var del = e.target.closest('[data-dc-conn-ctype-delete]');
 			var row = e.target.closest('[data-id]');
 			if (!row) return;
@@ -907,6 +991,21 @@
 				askText(t('Переименовать категорию'), t('Название'), current ? current.textContent : '').then(function (name) {
 					if (!name) return;
 					return post('collection_types', { action: 'update', id: id, name: name }).then(function () {
+						location.reload();
+					});
+				});
+			}
+			if (slugBtn) {
+				var curSlug = row.querySelector('.dc-conn-ctype-slug');
+				askText(t('Slug категории'), t('Slug'), curSlug ? curSlug.textContent.trim() : '').then(function (slug) {
+					if (slug === null) return;
+					var nameEl = row.querySelector('.dc-conn-ctype-name');
+					return post('collection_types', {
+						action: 'update',
+						id: id,
+						name: nameEl ? nameEl.textContent.trim() : '',
+						slug: slug,
+					}).then(function () {
 						location.reload();
 					});
 				});

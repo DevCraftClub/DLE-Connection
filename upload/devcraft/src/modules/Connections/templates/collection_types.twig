@@ -37,6 +37,7 @@
 			<tr>
 				<th name="id">ID</th>
 				<th name="name">{{ 'Название'|trans }}</th>
+				<th name="slug">Slug</th>
 				<th name="actions" data-sortable="false">{{ 'Действия'|trans }}</th>
 			</tr>
 		</thead>
@@ -45,9 +46,13 @@
 				<tr data-id="{{ type.id }}">
 					<td>{{ type.id }}</td>
 					<td class="dc-conn-ctype-name">{{ type.name }}</td>
+					<td class="dc-conn-ctype-slug">{{ type.slug|default('') }}</td>
 					<td>
 						<button type="button" class="button small" data-dc-conn-ctype-rename>
 							{{ 'Переименовать'|trans }}
+						</button>
+						<button type="button" class="button small" data-dc-conn-ctype-slug>
+							{{ 'Slug'|trans }}
 						</button>
 						<button type="button" class="button alert small" data-dc-conn-ctype-delete>
 							{{ 'Удалить'|trans }}
@@ -56,7 +61,7 @@
 				</tr>
 			{% else %}
 				<tr data-dc-conn-ctype-empty>
-					<td colspan="3">{{ 'Категорий пока нет'|trans }}</td>
+					<td colspan="4">{{ 'Категорий пока нет'|trans }}</td>
 				</tr>
 			{% endfor %}
 		</tbody>
