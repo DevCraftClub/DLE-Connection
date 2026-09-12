@@ -1,0 +1,65 @@
+<div id="dc-conn-collection-types" data-dc-conn-ctype-page="1" data-assets-base="{{ assets_base }}">
+	<div class="d-flex flex-align-center flex-justify-between mb-3">
+		<div>
+			<h2 class="mb-0">{{ page_title|default('Категории сборок'|trans) }}</h2>
+			<p class="text-muted text-small mb-0">
+				{{ 'Категории задают type_id сборки (фильтры публичного блока). Не путать с типами связей элементов.'|trans }}
+			</p>
+		</div>
+		<button type="button" class="button primary" data-dc-conn-ctype-add>
+			{{ 'Добавить категорию'|trans }}
+		</button>
+	</div>
+
+	{% include 'core/includes/form/filter_bar.twig' with {
+		mod: mod,
+		action: action,
+		filter_catalog: filter_catalog,
+		filter_rules: filter_rules,
+		filter_chips: filter_chips,
+		order: order,
+		sort: sort
+	} only %}
+
+	<p class="text-small mb-2">{{ total|default(0) }} {{ 'записей'|trans }}</p>
+
+	<table id="dc-conn-ctype-table"
+		   class="table striped table-border mt-2"
+		   data-role="table"
+		   data-show-search="true"
+		   data-show-rows-steps="false"
+		   data-show-table-info="false"
+		   data-show-pagination="false"
+		   data-rows="{{ per_page|default(100) }}"
+		   data-search-fields="name,id"
+		   data-table-search-placeholder="{{ 'Поиск…'|trans }}">
+		<thead>
+			<tr>
+				<th name="id">ID</th>
+				<th name="name">{{ 'Название'|trans }}</th>
+				<th name="actions" data-sortable="false">{{ 'Действия'|trans }}</th>
+			</tr>
+		</thead>
+		<tbody data-dc-conn-ctype-list>
+			{% for type in collection_types %}
+				<tr data-id="{{ type.id }}">
+					<td>{{ type.id }}</td>
+					<td class="dc-conn-ctype-name">{{ type.name }}</td>
+					<td>
+						<button type="button" class="button small" data-dc-conn-ctype-rename>
+							{{ 'Переименовать'|trans }}
+						</button>
+						<button type="button" class="button alert small" data-dc-conn-ctype-delete>
+							{{ 'Удалить'|trans }}
+						</button>
+					</td>
+				</tr>
+			{% else %}
+				<tr data-dc-conn-ctype-empty>
+					<td colspan="3">{{ 'Категорий пока нет'|trans }}</td>
+				</tr>
+			{% endfor %}
+		</tbody>
+	</table>
+	{% include '@connections/partials/dialogs.twig' %}
+</div>

@@ -1,0 +1,21 @@
+
+<div class="remark dc-conn-dashboard" id="dc-conn-dashboard"
+	 data-assets-base="{{ assets_base }}"
+	 data-dc-conn-tree='{{ tree|json_encode|e('html_attr') }}'
+	 data-dc-conn-relation-types='{{ relation_types|json_encode|e('html_attr') }}'
+	 data-dc-conn-collection-types='{{ collection_types|json_encode|e('html_attr') }}'>
+	<div class="d-flex flex-align-center flex-justify-between mb-3">
+		<div>
+			<h4 class="mb-0">{{ page_title|default('Сборки'|trans) }}</h4>
+			<p class="text-muted text-small mb-0">{{ 'Сборки связанных новостей. При создании выберите исходную новость. Перетаскивайте элементы внутри сборки.'|trans }}</p>
+		</div>
+		<button type="button" class="button primary" data-dc-conn-add-collection>
+			<img src="{{ assets_base }}/add-collection.svg" alt="" width="16" height="16" class="mr-1">
+			{{ 'Добавить сборку'|trans }}
+		</button>
+	</div>
+
+	<div class="dc-conn-tree" data-dc-conn-collections>{{ tree_html|raw }}</div>
+
+	{% include '@connections/partials/dialogs.twig' %}
+</div>

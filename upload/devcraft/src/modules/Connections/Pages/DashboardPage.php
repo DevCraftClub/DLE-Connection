@@ -6,31 +6,63 @@ namespace DevCraft\Modules\Connections\Pages;
 
 use DevCraft\Core\Abstracts\AbstractPage;
 use DevCraft\Core\Application;
-use DevCraft\Modules\Connections\Services\CollectionService;
-use DevCraft\Modules\Connections\Services\RelationTypeService;
+use DevCraft\Modules\Connections\ConnectionsIdentity;
 
 /**
- * Панель дерева сборок связей.
+ * Стандартная панель модуля (pages/dashboard.twig).
  */
 final class DashboardPage extends AbstractPage {
 
 	public function handle(): array {
-		$this->addBreadcrumb(__('Панель'));
+		$registry  = Application::instance()->registry();
+		$plugin    = $registry->forMod(ConnectionsIdentity::mod());
+		$meta      = $plugin?->meta() ?? [];
+		$context   = $this->adminContext();
+		$changelog = $plugin?->changelog() ?? [];
+		$latest    = isset($changelog[0]) ? $changelog[0]->toArray() : null;
+		$mod       = $plugin?->mod() ?? ConnectionsIdentity::mod();
+		$menu      = [];
 
-		$collections = new CollectionService();
-		$types       = new RelationTypeService();
-		$assetsBase  = rtrim(
-			Application::instance()->modulePublicAssetUrl(dirname(__DIR__)),
-			'/',
-		);
+		if($latest !== null) {
+			$latest['teaser_items'] = $changelog[0]->teaserItems(3);
+		}
+
+		foreach($context->menu() as $link) {
+			if($link->type !== 'link' || $link->action === null || $link->action === 'dashboard') {
+				continue;
+			}
+
+			$menu[] = [
+				'name'   => $link->name,
+				'link'   => $link->link,
+				'icon'   => $link->extra,
+				'action' => $link->action,
+			];
+		}
 
 		return [
-			'view' => 'connections/dashboard.twig',
+			'view' => 'pages/dashboard.twig',
 			'data' => [
-				'page_title'     => __('Связи'),
-				'tree'           => $collections->tree(),
-				'relation_types' => $types->list(),
-				'assets_base'    => $assetsBase,
+				'page_title' => (string) ($meta['name'] ?? 'Connections'),
+				'dashboard'  => [
+					'app'              => [
+						'name'        => (string) ($meta['name'] ?? 'Connections'),
+						'version'     => (string) ($meta['version'] ?? '0.0.0'),
+						'description' => (string) ($meta['description'] ?? ''),
+						'icon'        => (string) ($meta['icon'] ?? ''),
+						'docs_link'   => (string) ($meta['docsLink'] ?? ''),
+						'site_link'   => (string) ($meta['siteLink'] ?? ''),
+						'site_id'     => (int) ($meta['siteId'] ?? 0),
+						'code'        => (string) ($meta['module_code'] ?? ConnectionsIdentity::code()),
+					],
+					'author'           => $context->author()->toArray(),
+					'lic_link'         => $context->licLink(),
+					'menu'             => $menu,
+					'changelog_latest' => $latest,
+					'changelog_url'    => '?mod=' . $mod . '&action=changelog',
+					'show_assets'      => false,
+					'show_update'      => false,
+				],
 			],
 		];
 	}

@@ -8,11 +8,13 @@ use DevCraft\Builders\ModuleManifestBuilder;
 use DevCraft\Builders\ModuleAjaxConfigBuilder;
 use DevCraft\Builders\ModuleAssetsBuilder;
 use DevCraft\Modules\Connections\ConnectionsIdentity;
-use DevCraft\Modules\Connections\Pages\SettingsPage;
 use DevCraft\Modules\Connections\Pages\ChangelogPage;
 use DevCraft\Modules\Connections\Pages\DashboardPage;
-use DevCraft\Modules\Connections\Ajax\SettingsHandler;
+use DevCraft\Modules\Connections\Pages\TreePage;
+use DevCraft\Modules\Connections\Pages\RelationTypesPage;
+use DevCraft\Modules\Connections\Pages\CollectionTypesPage;
 use DevCraft\Modules\Connections\Ajax\TreeHandler;
+use DevCraft\Modules\Connections\Ajax\CollectionTypesHandler;
 use DevCraft\Modules\Connections\Ajax\SaveCollectionHandler;
 use DevCraft\Modules\Connections\Ajax\DeleteCollectionHandler;
 use DevCraft\Modules\Connections\Ajax\ReorderCollectionsHandler;
@@ -39,25 +41,27 @@ return ModuleManifestBuilder::create()
 	->docsLink('https://readme.devcraft.club/dev/connections/')
 	->siteLink('https://devcraft.club/')
 	->menu([
-		AdminLink::page(__('Панель'), 'dashboard', DashboardPage::class, 'mif-blockchain', ConnectionsIdentity::mod()),
-		AdminLink::page(__('Настройки'), 'settings', SettingsPage::class, 'mif-cog', ConnectionsIdentity::mod()),
+		AdminLink::page(__('Панель'), 'dashboard', DashboardPage::class, 'mif-home', ConnectionsIdentity::mod()),
+		AdminLink::page(__('Сборки'), 'tree', TreePage::class, 'mif-blockchain', ConnectionsIdentity::mod()),
+		AdminLink::page(__('Категории сборок'), 'collection_types', CollectionTypesPage::class, 'mif-folder', ConnectionsIdentity::mod()),
+		AdminLink::page(__('Типы связей'), 'relation_types', RelationTypesPage::class, 'mif-tag', ConnectionsIdentity::mod()),
 		AdminLink::page(__('История изменений'), 'changelog', ChangelogPage::class, 'mif-library', ConnectionsIdentity::mod()),
 	])
 	->ajax(
 		ModuleAjaxConfigBuilder::create('admin')
 			->methods([
-				'settings'             => SettingsHandler::class,
-				'tree'                 => TreeHandler::class,
-				'save_collection'      => SaveCollectionHandler::class,
-				'delete_collection'    => DeleteCollectionHandler::class,
-				'reorder_collections'  => ReorderCollectionsHandler::class,
-				'duplicate_collection' => DuplicateCollectionHandler::class,
-				'save_item'            => SaveItemHandler::class,
-				'delete_item'          => DeleteItemHandler::class,
-				'reorder_items'        => ReorderItemsHandler::class,
+				'tree'                   => TreeHandler::class,
+				'save_collection'        => SaveCollectionHandler::class,
+				'delete_collection'      => DeleteCollectionHandler::class,
+				'reorder_collections'    => ReorderCollectionsHandler::class,
+				'duplicate_collection'   => DuplicateCollectionHandler::class,
+				'save_item'              => SaveItemHandler::class,
+				'delete_item'            => DeleteItemHandler::class,
+				'reorder_items'          => ReorderItemsHandler::class,
 				'toggle_item_visibility' => ToggleItemVisibilityHandler::class,
-				'search_news'          => SearchNewsHandler::class,
-				'relation_types'       => RelationTypesHandler::class,
+				'search_news'            => SearchNewsHandler::class,
+				'relation_types'         => RelationTypesHandler::class,
+				'collection_types'       => CollectionTypesHandler::class,
 			])
 	)
 	->changelog(require DLEPlugins::Check(__DIR__ . '/changelog.data.php'))

@@ -27,12 +27,6 @@ final class CollectionService {
 		return is_array($cfg) ? $cfg : [];
 	}
 
-	public function isEnabled(): bool {
-		$cfg = $this->config();
-
-		return !empty($cfg['enabled']);
-	}
-
 	public function collectionsRepo(): ConnectionCollectionRepository {
 		/** @var ConnectionCollectionRepository $repo */
 		$repo = Application::instance()->database()->repository(ConnectionCollection::class);
@@ -61,26 +55,55 @@ final class CollectionService {
 		return $title;
 	}
 
-	public function create(string $title, ?string $description = null): ConnectionCollection {
+	public function create(string $title, ?string $description = null, int $typeId = 0): ConnectionCollection {
 		$collection              = new ConnectionCollection();
 		$collection->title       = $this->validateTitle($title);
 		$collection->description = $description !== null && trim($description) !== ''
 			? trim($description)
 			: null;
+		$collection->type_id     = (new CollectionTypeService())->normalizeTypeId($typeId);
 		$collection->sort_order  = $this->collectionsRepo()->nextSortOrder();
 		$this->collectionsRepo()->saveEntity($collection);
 
 		return $collection;
 	}
 
-	public function update(ConnectionCollection $collection, string $title, ?string $description = null): ConnectionCollection {
+	public function update(
+		ConnectionCollection $collection,
+		string $title,
+		?string $description = null,
+		?int $typeId = null,
+	): ConnectionCollection {
 		$collection->title       = $this->validateTitle($title);
 		$collection->description = $description !== null && trim($description) !== ''
 			? trim($description)
 			: null;
+
+		if($typeId !== null) {
+			$collection->type_id = (new CollectionTypeService())->normalizeTypeId($typeId);
+		}
+
 		$this->collectionsRepo()->saveEntity($collection);
 
 		return $collection;
+	}
+
+	/**
+	 * Сбрасывает type_id сборок при удалении категории.
+	 */
+	public function clearTypeId(int $typeId): void {
+		if($typeId <= 0) {
+			return;
+		}
+
+		foreach($this->collectionsRepo()->findAllOrdered() as $collection) {
+			if($collection->type_id !== $typeId) {
+				continue;
+			}
+
+			$collection->type_id = 0;
+			$this->collectionsRepo()->saveEntity($collection);
+		}
 	}
 
 	public function delete(ConnectionCollection $collection): void {
@@ -111,6 +134,7 @@ final class CollectionService {
 		$copy = $this->create(
 			$source->title . ' (' . __('копия') . ')',
 			$source->description,
+			$source->type_id,
 		);
 
 		foreach($this->itemsRepo()->findByCollection($source->id()) as $item) {
@@ -133,10 +157,12 @@ final class CollectionService {
 	 */
 	public function tree(?int $focusNewsId = null): array {
 		$newsTitles = [];
+		$typeNames  = (new CollectionTypeService())->nameMap();
 		$tree       = [];
 
 		foreach($this->collectionsRepo()->findAllOrdered() as $collection) {
-			$items = [];
+			$items  = [];
+			$typeId = (int) $collection->type_id;
 
 			foreach($this->itemsRepo()->findByCollection($collection->id()) as $item) {
 				$newsId = $item->news_id;
@@ -160,6 +186,8 @@ final class CollectionService {
 				'id'          => $collection->id(),
 				'title'       => $collection->title,
 				'description' => $collection->description,
+				'type_id'     => $typeId,
+				'type_name'   => $typeId > 0 ? ($typeNames[$typeId] ?? null) : null,
 				'sort_order'  => $collection->sort_order,
 				'items'       => $items,
 			];

@@ -21,5 +21,4 @@ if (!defined('DEVCRAFT_BOOTSTRAPPED')) {
 	return;
 }
 
-// admin_sections.name = dle_connections (code); каталог модуля = Connections
 DevCraft\Core\Application::instance()->runAdmin(moduleDir: 'Connections', mod: 'dle_connections');

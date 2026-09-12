@@ -1,0 +1,80 @@
+<template id="dc-conn-nf-tpl-empty">
+	<div class="dc-conn-nf-empty">{{ 'Пока нет участий в сборках'|trans }}</div>
+</template>
+
+<template id="dc-conn-nf-tpl-collection">
+	<div class="dc-conn-nf-collection" data-row-key="">
+		<div class="dc-conn-nf-head">
+			<span class="dc-conn-nf-title" data-dc-conn-nf-title></span>
+			<span class="dc-conn-nf-actions" data-dc-conn-nf-head-actions>
+				<button type="button" class="btn btn-default btn-xs btn-raised" data-action="add-item" title="{{ 'Добавить новость'|trans }}">
+					<img src="{{ assets_base }}/add-item.svg" alt="" width="14" height="14">
+				</button>
+				<button type="button" class="btn btn-default btn-xs btn-raised" data-action="rename" data-dc-conn-nf-rename hidden title="{{ 'Переименовать'|trans }}">
+					<img src="{{ assets_base }}/rename.svg" alt="" width="14" height="14">
+				</button>
+				<button type="button" class="btn btn-default btn-xs btn-raised" data-action="copy-collection" title="{{ 'Копировать сборку'|trans }}">
+					<img src="{{ assets_base }}/copy.svg" alt="" width="14" height="14">
+				</button>
+				<button type="button" class="btn btn-danger btn-xs btn-raised" data-action="remove" title="{{ 'Убрать из сборки'|trans }}">
+					<img src="{{ assets_base }}/delete.svg" alt="" width="14" height="14">
+				</button>
+			</span>
+		</div>
+		<div class="dc-conn-nf-tree" data-dc-conn-nf-items></div>
+		<div class="dc-conn-nf-foot">
+			<button type="button" class="btn btn-default btn-xs btn-raised" data-action="add-item" title="{{ 'Добавить новость'|trans }}">
+				<img src="{{ assets_base }}/add-item.svg" alt="" width="14" height="14">
+				<span>{{ 'Добавить новость'|trans }}</span>
+			</button>
+		</div>
+	</div>
+</template>
+
+<template id="dc-conn-nf-tpl-item">
+	<div class="dc-conn-nf-item">
+		<span class="dd-handles dc-conn-nf-drag" data-drag="item" title="{{ 'Перетащить'|trans }}" aria-label="{{ 'Перетащить'|trans }}">
+			<img src="{{ assets_base }}/drag-handle.svg" alt="" width="14" height="14">
+		</span>
+		<span class="dc-conn-nf-thumb" aria-hidden="true"></span>
+		<div class="dc-conn-nf-item-body">
+			<div class="dc-conn-nf-item-title" data-dc-conn-nf-news-title></div>
+			<span class="dc-conn-nf-item-meta-row" data-dc-conn-nf-meta-row>
+				<span class="dc-conn-nf-item-meta" data-dc-conn-nf-meta data-action="edit-type" title="{{ 'Тип связи'|trans }}"></span>
+				<button type="button" class="btn btn-default btn-xs btn-raised dc-conn-nf-icon-btn" data-action="edit-type" data-dc-conn-nf-type-btn title="{{ 'Тип связи'|trans }}">
+					<img src="{{ assets_base }}/select.svg" alt="" width="14" height="14">
+				</button>
+			</span>
+		</div>
+		<span class="dc-conn-nf-actions" data-dc-conn-nf-actions>
+			<a class="btn btn-default btn-xs btn-raised dc-conn-nf-icon-btn" data-dc-conn-nf-open hidden href="#" target="_blank" rel="noopener noreferrer" title="{{ 'Открыть в админке'|trans }}">
+				<img src="{{ assets_base }}/open-news.svg" alt="" width="14" height="14">
+			</a>
+			<button type="button" class="btn btn-default btn-xs btn-raised" data-action="replace-news" title="{{ 'Сменить новость'|trans }}">
+				<img src="{{ assets_base }}/search-news.svg" alt="" width="14" height="14">
+			</button>
+			<button type="button" class="btn btn-default btn-xs btn-raised" data-action="toggle-vis" data-dc-conn-nf-vis-btn title="{{ 'Скрыть'|trans }}">
+				<img src="{{ assets_base }}/visibility-on.svg" alt="" width="14" height="14" data-dc-conn-nf-eye>
+			</button>
+			<button type="button" class="btn btn-default btn-xs btn-raised" data-action="copy-item" title="{{ 'Копировать в другую сборку'|trans }}">
+				<img src="{{ assets_base }}/copy.svg" alt="" width="14" height="14">
+			</button>
+			<button type="button" class="btn btn-danger btn-xs btn-raised" data-action="remove-item" data-dc-conn-nf-remove-btn title="{{ 'Убрать из сборки'|trans }}">
+				<img src="{{ assets_base }}/delete.svg" alt="" width="14" height="14">
+			</button>
+		</span>
+	</div>
+</template>
+
+<template id="dc-conn-nf-tpl-select">
+	<label class="control-label" data-dc-conn-label></label>
+	<select id="dc-conn-select" class="uniform form-control" style="width:100%"></select>
+</template>
+
+<template id="dc-conn-nf-tpl-search-news">
+	<div class="form-group">
+		<label class="control-label">{{ 'Поиск'|trans }}</label>
+		<input type="text" class="form-control" id="dc-conn-nf-news-q" placeholder="{{ 'Название или ID'|trans }}" autocomplete="off">
+	</div>
+	<div id="dc-conn-nf-news-results" class="dc-conn-nf-search-results list-group"></div>
+</template>

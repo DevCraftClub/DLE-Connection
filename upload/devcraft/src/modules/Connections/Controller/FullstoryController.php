@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace DevCraft\Modules\Connections\Controller;
 
-use DevCraft\Modules\Connections\Services\CollectionService;
 use DevCraft\Modules\Connections\Services\PublicTreeService;
 
 /**
@@ -22,12 +21,6 @@ final class FullstoryController {
 		global $tpl, $config;
 
 		if($newsId <= 0) {
-			return '';
-		}
-
-		$collections = new CollectionService();
-
-		if(!$collections->isEnabled()) {
 			return '';
 		}
 

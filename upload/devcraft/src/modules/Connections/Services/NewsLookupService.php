@@ -9,6 +9,28 @@ namespace DevCraft\Modules\Connections\Services;
  */
 final class NewsLookupService {
 
+	/**
+	 * Проверяет существование новости по id.
+	 */
+	public static function exists(int $newsId): bool {
+		if($newsId <= 0) {
+			return false;
+		}
+
+		global $db;
+
+		if(!isset($db) || !is_object($db)) {
+			return false;
+		}
+
+		$newsId = (int) $newsId;
+		$row    = $db->super_query(
+			'SELECT id FROM ' . PREFIX . "_post WHERE id = '{$newsId}' LIMIT 1",
+		);
+
+		return is_array($row) && !empty($row['id']);
+	}
+
 	public static function titleById(int $newsId): string {
 		if($newsId <= 0) {
 			return '';

@@ -1,0 +1,38 @@
+{# Сборка на вкладке новости: черновик до Save. #}
+<div class="dc-conn-nf-collection" data-row-key="{{ row_key }}">
+	<div class="dc-conn-nf-head">
+		<span class="dc-conn-nf-title">{{ collection_title }}</span>
+		<span class="dc-conn-nf-actions">
+			<button type="button" class="btn btn-default btn-xs btn-raised" data-action="add-item" title="{{ 'Добавить новость'|trans }}">
+				<img src="{{ assets_base }}/add-item.svg" alt="" width="14" height="14">
+			</button>
+			{% if is_draft|default(false) %}
+				<button type="button" class="btn btn-default btn-xs btn-raised" data-action="rename" title="{{ 'Переименовать'|trans }}">
+					<img src="{{ assets_base }}/rename.svg" alt="" width="14" height="14">
+				</button>
+			{% endif %}
+			<button type="button" class="btn btn-default btn-xs btn-raised" data-action="copy-collection" title="{{ 'Копировать сборку'|trans }}">
+				<img src="{{ assets_base }}/copy.svg" alt="" width="14" height="14">
+			</button>
+			<button type="button" class="btn btn-danger btn-xs btn-raised" data-action="remove" title="{{ 'Убрать из сборки'|trans }}">
+				<img src="{{ assets_base }}/delete.svg" alt="" width="14" height="14">
+			</button>
+		</span>
+	</div>
+	<div class="dc-conn-nf-tree" data-dc-conn-nf-items>
+		{% for item in items %}
+			{% include '@connections/partials/news_form_item.twig' with {
+				item: item,
+				news_title: news_title|default(''),
+				assets_base: assets_base,
+				admin_edit_news_url: admin_edit_news_url|default('')
+			} only %}
+		{% endfor %}
+	</div>
+	<div class="dc-conn-nf-foot">
+		<button type="button" class="btn btn-default btn-xs btn-raised" data-action="add-item" title="{{ 'Добавить новость'|trans }}">
+			<img src="{{ assets_base }}/add-item.svg" alt="" width="14" height="14">
+			{{ 'Добавить новость'|trans }}
+		</button>
+	</div>
+</div>

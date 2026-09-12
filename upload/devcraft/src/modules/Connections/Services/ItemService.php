@@ -51,7 +51,29 @@ final class ItemService {
 		ConnectionItem $item,
 		?string $relationType = null,
 		?bool $isVisible = null,
+		?int $newsId = null,
 	): ConnectionItem {
+		if($newsId !== null) {
+			$newsId = (int) $newsId;
+
+			if($newsId <= 0) {
+				throw new RuntimeException(__('Некорректный идентификатор новости'));
+			}
+
+			if($newsId !== $item->news_id) {
+				$exists = $this->collections->itemsRepo()->findByCollectionAndNews(
+					$item->collection_id,
+					$newsId,
+				);
+
+				if($exists !== null && $exists->id() !== $item->id()) {
+					throw new RuntimeException(__('Новость уже есть в этой сборке'));
+				}
+
+				$item->news_id = $newsId;
+			}
+		}
+
 		if($relationType !== null) {
 			$item->relation_type = trim($relationType);
 		}

@@ -37,7 +37,10 @@ final class SaveItemHandler implements AjaxHandlerInterface {
 					return JsonResponse::fail(__('Ошибка'), __('Элемент не найден'), 'error', 404);
 				}
 
-				$service->update($item, $relationType, $isVisible);
+				$nextNewsId = array_key_exists('news_id', $request->data) ? $newsId : null;
+				$nextType   = array_key_exists('relation_type', $request->data) ? $relationType : null;
+				$nextVis    = array_key_exists('is_visible', $request->data) ? $isVisible : null;
+				$service->update($item, $nextType, $nextVis, $nextNewsId > 0 ? $nextNewsId : null);
 			} else {
 				$item = $service->add($collectionId, $newsId, $relationType, $isVisible);
 			}

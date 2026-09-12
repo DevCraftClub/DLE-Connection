@@ -1,0 +1,43 @@
+<li class="dc-conn-collection expanded" data-collection-id="{{ col.id }}" data-type-id="{{ col.type_id|default(0) }}">
+	<div class="dc-conn-collection-head">
+		<button type="button" class="button cycle outline dc-conn-icon-btn dc-conn-drag" data-drag="collection" title="{{ 'Перетащить'|trans }}">
+			<img src="{{ assets_base }}/drag-handle.svg" alt="" width="16" height="16">
+		</button>
+		<span class="dc-conn-title">{{ col.title }}</span>
+		<button type="button" class="button small outline dc-conn-type-chip" data-action="set-collection-type" title="{{ 'Категория сборки'|trans }}">
+			{{ col.type_name|default('Без категории'|trans) }}
+		</button>
+		<span class="dc-conn-actions">
+			<button type="button" class="button cycle outline dc-conn-icon-btn" data-action="save-collection" title="{{ 'Сохранить сборку'|trans }}">
+				<img src="{{ assets_base }}/save.svg" alt="" width="16" height="16">
+			</button>
+			<button type="button" class="button cycle outline dc-conn-icon-btn" data-action="add-item" title="{{ 'Добавить новость'|trans }}">
+				<img src="{{ assets_base }}/add-item.svg" alt="" width="16" height="16">
+			</button>
+			<button type="button" class="button cycle outline dc-conn-icon-btn" data-action="rename-collection" title="{{ 'Переименовать'|trans }}">
+				<img src="{{ assets_base }}/rename.svg" alt="" width="16" height="16">
+			</button>
+			<button type="button" class="button cycle outline dc-conn-icon-btn" data-action="copy-collection" title="{{ 'Копировать'|trans }}">
+				<img src="{{ assets_base }}/copy.svg" alt="" width="16" height="16">
+			</button>
+			<button type="button" class="button cycle outline dc-conn-icon-btn alert" data-action="delete-collection" title="{{ 'Удалить'|trans }}">
+				<img src="{{ assets_base }}/delete.svg" alt="" width="16" height="16">
+			</button>
+		</span>
+	</div>
+	<ul class="dc-conn-items" data-items-for="{{ col.id }}">
+		{% for item in col.items|default([]) %}
+			{% include '@connections/partials/tree_item.twig' with {
+				item: item,
+				assets_base: assets_base,
+				admin_edit_news_url: admin_edit_news_url|default('')
+			} only %}
+		{% endfor %}
+	</ul>
+	<div class="dc-conn-collection-foot">
+		<button type="button" class="button small" data-action="add-item">
+			<img src="{{ assets_base }}/add-item.svg" alt="" width="14" height="14">
+			{{ 'Добавить новость'|trans }}
+		</button>
+	</div>
+</li>

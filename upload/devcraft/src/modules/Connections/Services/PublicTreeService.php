@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace DevCraft\Modules\Connections\Services;
 
+use DevCraft\Modules\Connections\Models\ConnectionItem;
+
 /**
  * Публичный вывод связей для полной новости.
  */
@@ -15,13 +17,24 @@ final class PublicTreeService {
 
 	/**
 	 * Сборки, где есть $newsId: без текущей новости, только visible, пустые убрать.
+	 * Тип связи: явный `relation_type` или автоматически по порядку относительно текущей новости.
 	 *
 	 * @param list<int> $typeInclude  whitelist type_id (пусто = без whitelist)
 	 * @param list<int> $typeExclude  blacklist type_id
 	 * @return list<array{id:int, title:string, description:?string, type_id:int, items:list<array<string, mixed>>}>
 	 */
 	public function forNews(int $newsId, array $typeInclude = [], array $typeExclude = []): array {
-		if($newsId <= 0 || !$this->collections->isEnabled()) {
+		if($newsId <= 0) {
+			return [];
+		}
+
+		$focusSortByCollection = [];
+
+		foreach($this->collections->itemsRepo()->findByNewsId($newsId) as $focus) {
+			$focusSortByCollection[$focus->collection_id] = $focus->sort_order;
+		}
+
+		if($focusSortByCollection === []) {
 			return [];
 		}
 
@@ -66,7 +79,8 @@ final class PublicTreeService {
 				continue;
 			}
 
-			$rowItems = [];
+			$focusSort = $focusSortByCollection[$colId] ?? null;
+			$rowItems  = [];
 
 			foreach($byCollection[$colId] as $item) {
 				$post = $posts[$item->news_id] ?? null;
@@ -82,7 +96,7 @@ final class PublicTreeService {
 					'alt_name'      => $post['alt_name'],
 					'category'      => $post['category'],
 					'date'          => $post['date'],
-					'relation_type' => $item->relation_type,
+					'relation_type' => $this->resolveRelationLabel($item, $focusSort),
 				];
 			}
 
@@ -100,6 +114,31 @@ final class PublicTreeService {
 		}
 
 		return $tree;
+	}
+
+	/**
+	 * Явный тип (Приквел / Спин-офф) или авто: раньше в порядке → Предыстория, позже → Продолжение.
+	 */
+	private function resolveRelationLabel(ConnectionItem $item, ?int $focusSort): string {
+		$stored = trim($item->relation_type);
+
+		if($stored !== '') {
+			return $stored;
+		}
+
+		if($focusSort === null) {
+			return '';
+		}
+
+		if($item->sort_order < $focusSort) {
+			return __('Предыстория');
+		}
+
+		if($item->sort_order > $focusSort) {
+			return __('Продолжение');
+		}
+
+		return '';
 	}
 
 }

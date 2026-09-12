@@ -13,14 +13,6 @@
 		return window.__ ? window.__(key) : key;
 	}
 
-	function escapeHtml(value) {
-		return String(value)
-			.replace(/&/g, '&amp;')
-			.replace(/</g, '&lt;')
-			.replace(/>/g, '&gt;')
-			.replace(/"/g, '&quot;');
-	}
-
 	function post(method, data) {
 		return Ajax.post(method, data || {}).then(function (payload) {
 			if (Ajax.handleNotice) {
@@ -54,8 +46,89 @@
 		});
 	}
 
-	function icon(base, name) {
-		return '<img src="' + escapeHtml(base + '/' + name) + '" alt="" width="16" height="16">';
+	function parseJsonAttr(el, name, fallback) {
+		try {
+			var raw = el.getAttribute(name);
+			if (!raw) return fallback;
+			return JSON.parse(raw);
+		} catch (e) {
+			return fallback;
+		}
+	}
+
+	/** Клон Twig-<template>; опции/тексты — через DOM API. */
+	function cloneTemplate(id) {
+		var tpl = document.getElementById(id);
+		if (!tpl || !tpl.content) {
+			return null;
+		}
+		return tpl.content.cloneNode(true);
+	}
+
+	function fragmentToHtml(fragment) {
+		var wrap = document.createElement('div');
+		wrap.appendChild(fragment);
+		return wrap.innerHTML;
+	}
+
+	/** DOM-элемент диалога из ответа Metro.dialogCreate / dialogApi().create. */
+	function dialogNode(created) {
+		if (!created) return null;
+		if (created.nodeType === 1) return created;
+		if (created[0] && created[0].nodeType === 1) return created[0];
+		if (created.element && created.element[0]) return created.element[0];
+		if (created.elem) return created.elem;
+		return null;
+	}
+
+	/**
+	 * Явное закрытие: у customButtons с onclick делегат `.js-dialog-close` часто не срабатывает.
+	 */
+	function closeDialog(createdOrEl) {
+		var el = dialogNode(createdOrEl) || createdOrEl;
+		if (!el) return;
+		if (Metro && typeof Metro.dialogClose === 'function') {
+			Metro.dialogClose(el);
+			return;
+		}
+		var api = Metro && typeof Metro.dialogApi === 'function' ? Metro.dialogApi() : null;
+		if (api && typeof api.close === 'function') {
+			api.close(el);
+			return;
+		}
+		var plugin = Metro && typeof Metro.getPlugin === 'function' ? Metro.getPlugin(el, 'dialog') : null;
+		if (plugin && typeof plugin.close === 'function') {
+			plugin.close();
+		}
+	}
+
+	/** Крестик Metro: делегат `.js-dialog-close` ненадёжен вместе с customButtons.onclick. */
+	function bindDialogCloser(created, onClick) {
+		var root = dialogNode(created);
+		if (!root) return;
+		var closer = root.querySelector('span.closer');
+		if (!closer || closer.getAttribute('data-dc-conn-close-bound')) return;
+		closer.setAttribute('data-dc-conn-close-bound', '1');
+		closer.addEventListener('click', function (e) {
+			e.preventDefault();
+			e.stopPropagation();
+			if (typeof onClick === 'function') onClick();
+			closeDialog(created);
+		});
+	}
+
+	function fillSelect(select, options, selected) {
+		if (!select) return;
+		select.innerHTML = '';
+		(options || []).forEach(function (opt) {
+			var el = document.createElement('option');
+			el.value = String(opt.value);
+			el.textContent = String(opt.label);
+			if (String(opt.value) === String(selected)) {
+				el.selected = true;
+			}
+			select.appendChild(el);
+		});
 	}
 
 	function askText(title, label, initial) {
@@ -72,13 +145,22 @@
 				done(fallback === null ? null : String(fallback).trim());
 				return;
 			}
-			Metro.dialogCreate({
+			var frag = cloneTemplate('dc-conn-tpl-ask-text');
+			if (!frag) {
+				var missing = window.prompt(label || title, initial || '');
+				done(missing === null ? null : String(missing).trim());
+				return;
+			}
+			var labelEl = frag.querySelector('[data-dc-conn-label]');
+			var input = frag.querySelector('#dc-conn-ask-text');
+			if (labelEl) labelEl.textContent = label || t('Название');
+			if (input) input.value = initial || '';
+			var dlg = Metro.dialogCreate({
 				title: title,
-				content: '<label class="d-block mb-1">' + escapeHtml(label || t('Название')) + '</label>'
-					+ '<input type="text" id="dc-conn-ask-text" class="metro-input" style="width:100%" value="'
-					+ escapeHtml(initial || '') + '" />',
+				content: fragmentToHtml(frag),
 				closeButton: true,
 				defaultActions: false,
+				removeOnClose: true,
 				onClose: function () {
 					done(pending === undefined ? null : pending);
 				},
@@ -90,6 +172,7 @@
 							var el = document.getElementById('dc-conn-ask-text');
 							pending = el ? String(el.value).trim() : '';
 							done(pending || null);
+							closeDialog(dlg);
 						},
 					},
 					{
@@ -98,9 +181,14 @@
 						onclick: function () {
 							pending = null;
 							done(null);
+							closeDialog(dlg);
 						},
 					},
 				],
+			});
+			bindDialogCloser(dlg, function () {
+				pending = null;
+				done(null);
 			});
 		});
 	}
@@ -118,11 +206,19 @@
 				done(window.confirm(message));
 				return;
 			}
-			Metro.dialogCreate({
+			var frag = cloneTemplate('dc-conn-tpl-confirm');
+			if (!frag) {
+				done(window.confirm(message));
+				return;
+			}
+			var msgEl = frag.querySelector('[data-dc-conn-message]');
+			if (msgEl) msgEl.textContent = message;
+			var dlg = Metro.dialogCreate({
 				title: title,
-				content: '<p>' + escapeHtml(message) + '</p>',
+				content: fragmentToHtml(frag),
 				closeButton: true,
 				defaultActions: false,
+				removeOnClose: true,
 				onClose: function () {
 					done(pending);
 				},
@@ -133,6 +229,7 @@
 						onclick: function () {
 							pending = true;
 							done(true);
+							closeDialog(dlg);
 						},
 					},
 					{
@@ -141,31 +238,89 @@
 						onclick: function () {
 							pending = false;
 							done(false);
+							closeDialog(dlg);
 						},
 					},
 				],
 			});
+			bindDialogCloser(dlg, function () {
+				pending = false;
+				done(false);
+			});
 		});
 	}
 
-	function parseJsonAttr(el, name, fallback) {
-		try {
-			var raw = el.getAttribute(name);
-			if (!raw) return fallback;
-			return JSON.parse(raw);
-		} catch (e) {
-			return fallback;
-		}
+	function selectDialog(title, label, options, selected, okText, templateId, selectId) {
+		return new Promise(function (resolve) {
+			var pending;
+			var settled = false;
+			function done(value) {
+				if (settled) return;
+				settled = true;
+				resolve(value);
+			}
+			if (!Metro || typeof Metro.dialogCreate !== 'function') {
+				done(selected);
+				return;
+			}
+			var frag = cloneTemplate(templateId || 'dc-conn-tpl-select-collection');
+			if (!frag) {
+				done(null);
+				return;
+			}
+			var labelEl = frag.querySelector('[data-dc-conn-label]');
+			var select = frag.querySelector('#' + (selectId || 'dc-conn-select-collection'));
+			if (labelEl) labelEl.textContent = label;
+			fillSelect(select, options, selected);
+			var dlg = Metro.dialogCreate({
+				title: title,
+				content: fragmentToHtml(frag),
+				closeButton: true,
+				defaultActions: false,
+				removeOnClose: true,
+				onClose: function () {
+					done(pending === undefined ? null : pending);
+				},
+				customButtons: [
+					{
+						text: okText || t('Выбрать'),
+						cls: 'primary js-dialog-close',
+						onclick: function () {
+							var el = document.getElementById(selectId || 'dc-conn-select-collection');
+							pending = el ? String(el.value) : '';
+							done(pending);
+							closeDialog(dlg);
+						},
+					},
+					{
+						text: t('Отмена'),
+						cls: 'js-dialog-close',
+						onclick: function () {
+							pending = null;
+							done(null);
+							closeDialog(dlg);
+						},
+					},
+				],
+			});
+			bindDialogCloser(dlg, function () {
+				pending = null;
+				done(null);
+			});
+		});
 	}
 
 	function ConnectionsUI(root) {
 		this.root = root;
 		this.assets = root.getAttribute('data-assets-base') || '';
 		this.tree = parseJsonAttr(root, 'data-dc-conn-tree', []);
-		this.types = parseJsonAttr(root, 'data-dc-conn-types', []);
+		/* Категории сборок (type_id) и типы связей элементов — разные справочники. */
+		this.relationTypes = parseJsonAttr(root, 'data-dc-conn-relation-types', []);
+		this.collectionTypes = parseJsonAttr(root, 'data-dc-conn-collection-types', []);
 		this.collectionsEl = root.querySelector('[data-dc-conn-collections]');
 		this.bind();
-		this.render();
+		this.bindTreeview();
+		this.bindDrag();
 	}
 
 	ConnectionsUI.prototype.bind = function () {
@@ -179,18 +334,64 @@
 		this.root.addEventListener('click', function (e) {
 			var btn = e.target.closest('[data-action]');
 			if (!btn || !self.root.contains(btn)) return;
+			e.preventDefault();
 			var action = btn.getAttribute('data-action');
 			var col = btn.closest('[data-collection-id]');
 			var item = btn.closest('[data-item-id]');
 			var colId = col ? parseInt(col.getAttribute('data-collection-id'), 10) : 0;
 			var itemId = item ? parseInt(item.getAttribute('data-item-id'), 10) : 0;
+			if (action === 'save-collection') self.saveCollection(colId);
 			if (action === 'rename-collection') self.renameCollection(colId);
+			if (action === 'set-collection-type') self.setCollectionType(colId);
 			if (action === 'delete-collection') self.deleteCollection(colId);
 			if (action === 'copy-collection') self.copyCollection(colId);
 			if (action === 'add-item') self.addItem(colId);
+			if (action === 'save-item') self.saveItem(itemId);
+			if (action === 'replace-news') self.replaceItemNews(itemId);
+			if (action === 'copy-item') self.copyItem(itemId);
 			if (action === 'delete-item') self.deleteItem(itemId);
 			if (action === 'toggle-item') self.toggleItem(itemId);
 			if (action === 'edit-item-type') self.editItemType(itemId);
+		});
+	};
+
+	ConnectionsUI.prototype.applyTreeHtml = function (html) {
+		if (!this.collectionsEl || typeof html !== 'string') return;
+		this.unbindDrag();
+		this.unbindTreeview();
+		this.collectionsEl.innerHTML = html;
+		this.bindTreeview();
+		this.bindDrag();
+	};
+
+	ConnectionsUI.prototype.unbindTreeview = function () {
+		if (!Metro || typeof Metro.getPlugin !== 'function' || !this.collectionsEl) {
+			return;
+		}
+		this.collectionsEl.querySelectorAll('[data-role="treeview"]').forEach(function (el) {
+			try {
+				var plugin = Metro.getPlugin(el, 'treeview');
+				if (plugin && typeof plugin.destroy === 'function') {
+					plugin.destroy();
+				}
+			} catch (e) {
+				/* ещё не инициализирован */
+			}
+		});
+	};
+
+	ConnectionsUI.prototype.bindTreeview = function () {
+		if (!Metro || typeof Metro.makePlugin !== 'function' || !this.collectionsEl) {
+			return;
+		}
+		this.collectionsEl.querySelectorAll('[data-role="treeview"]').forEach(function (el) {
+			try {
+				Metro.makePlugin(el, 'treeview', {
+					showChildCount: false,
+				});
+			} catch (e) {
+				/* уже инициализирован автозапуском Metro */
+			}
 		});
 	};
 
@@ -199,153 +400,144 @@
 		return post('tree', {}).then(function (payload) {
 			var data = payload && payload.data ? payload.data : {};
 			self.tree = data.tree || [];
-			self.types = data.relation_types || self.types;
-			self.render();
+			self.relationTypes = data.relation_types || self.relationTypes;
+			self.collectionTypes = data.collection_types || self.collectionTypes;
+			if (typeof data.html === 'string') {
+				self.applyTreeHtml(data.html);
+			}
 		});
 	};
 
-	ConnectionsUI.prototype.render = function () {
-		if (!this.collectionsEl) return;
-		if (!this.tree.length) {
-			this.collectionsEl.innerHTML = '<div class="dc-conn-empty">' + escapeHtml(t('Сборок пока нет')) + '</div>';
+	/**
+	 * Metro drag-items на двух уровнях (сборки + новости).
+	 * Оба вешают .drag-items-target → drop смотрит elementsFromPoint и может
+	 * утащить li в чужой контейнер. На время drag снимаем target с «другого» уровня.
+	 * Маркеры: data-drag=collection|item — иначе outer closest(collection) ловит item-handle.
+	 */
+	ConnectionsUI.prototype.unbindDrag = function () {
+		if (!Metro || typeof Metro.getPlugin !== 'function' || !this.collectionsEl) {
 			return;
 		}
-		var self = this;
-		var html = this.tree.map(function (col) {
-			return self.renderCollection(col);
-		}).join('');
-		this.collectionsEl.innerHTML = html;
-		this.bindDnD();
-	};
-
-	ConnectionsUI.prototype.renderCollection = function (col) {
-		var self = this;
-		var items = (col.items || []).map(function (item) {
-			return self.renderItem(item);
-		}).join('');
-		return '<div class="dc-conn-collection" data-collection-id="' + col.id + '" draggable="true">'
-			+ '<div class="dc-conn-collection-head">'
-			+ '<span class="dc-conn-drag" data-drag="collection">' + icon(this.assets, 'drag-handle.svg') + '</span>'
-			+ '<span class="dc-conn-title">' + escapeHtml(col.title) + '</span>'
-			+ '<span class="dc-conn-actions">'
-			+ '<button type="button" class="button cycle outline" data-action="add-item" title="' + escapeHtml(t('Добавить новость')) + '">' + icon(this.assets, 'add-item.svg') + '</button>'
-			+ '<button type="button" class="button cycle outline" data-action="rename-collection" title="' + escapeHtml(t('Переименовать')) + '">' + icon(this.assets, 'rename.svg') + '</button>'
-			+ '<button type="button" class="button cycle outline" data-action="copy-collection" title="' + escapeHtml(t('Копировать')) + '">' + icon(this.assets, 'copy.svg') + '</button>'
-			+ '<button type="button" class="button cycle outline alert" data-action="delete-collection" title="' + escapeHtml(t('Удалить')) + '">' + icon(this.assets, 'delete.svg') + '</button>'
-			+ '</span></div>'
-			+ '<ul class="dc-conn-items" data-items-for="' + col.id + '">' + (items || '') + '</ul>'
-			+ '</div>';
-	};
-
-	ConnectionsUI.prototype.renderItem = function (item) {
-		var cls = 'dc-conn-item';
-		if (!item.is_visible) cls += ' is-hidden';
-		if (item.is_focus) cls += ' is-focus';
-		var visIcon = item.is_visible ? 'visibility-on.svg' : 'visibility-off.svg';
-		var meta = item.relation_type
-			? '<span class="dc-conn-item-meta">' + escapeHtml(item.relation_type) + '</span>'
-			: '';
-		return '<li class="' + cls + '" data-item-id="' + item.id + '" data-news-id="' + item.news_id + '" draggable="true">'
-			+ '<span class="dc-conn-drag" data-drag="item">' + icon(this.assets, 'drag-handle.svg') + '</span>'
-			+ '<span class="dc-conn-item-title flex-fill">' + escapeHtml(item.news_title || ('#' + item.news_id)) + '</span>'
-			+ meta
-			+ '<span class="dc-conn-actions">'
-			+ '<button type="button" class="button cycle outline" data-action="edit-item-type" title="' + escapeHtml(t('Тип связи')) + '">' + icon(this.assets, 'relation-type.svg') + '</button>'
-			+ '<button type="button" class="button cycle outline" data-action="toggle-item" title="' + escapeHtml(t('Видимость')) + '">' + icon(this.assets, visIcon) + '</button>'
-			+ '<button type="button" class="button cycle outline alert" data-action="delete-item" title="' + escapeHtml(t('Удалить')) + '">' + icon(this.assets, 'delete.svg') + '</button>'
-			+ '</span></li>';
-	};
-
-	ConnectionsUI.prototype.bindDnD = function () {
-		var self = this;
-		var collections = Array.from(this.collectionsEl.querySelectorAll('.dc-conn-collection'));
-		collections.forEach(function (el) {
-			el.addEventListener('dragstart', function (e) {
-				if (e.target.closest('[data-item-id]')) return;
-				e.dataTransfer.setData('text/dc-conn-collection', el.getAttribute('data-collection-id'));
-				e.dataTransfer.effectAllowed = 'move';
-			});
-			el.addEventListener('dragover', function (e) {
-				if (e.dataTransfer.types.indexOf('text/dc-conn-collection') !== -1) {
-					e.preventDefault();
-					el.classList.add('dc-conn-drop-target');
+		var destroyList = function (list) {
+			try {
+				var plugin = Metro.getPlugin(list, 'drag-items');
+				if (plugin && typeof plugin.destroy === 'function') {
+					plugin.destroy();
 				}
+			} catch (e) {
+				/* плагин ещё не создан */
+			}
+			list.classList.remove('drag-items-target');
+			list.querySelectorAll('.drag-item-marker').forEach(function (marker) {
+				marker.remove();
 			});
-			el.addEventListener('dragleave', function () {
-				el.classList.remove('dc-conn-drop-target');
+		};
+		this.collectionsEl.querySelectorAll('.dc-conn-treeview').forEach(destroyList);
+		this.collectionsEl.querySelectorAll('.dc-conn-items').forEach(destroyList);
+	};
+
+	ConnectionsUI.prototype.bindDrag = function () {
+		var self = this;
+		if (!Metro || typeof Metro.makePlugin !== 'function' || !this.collectionsEl) {
+			return;
+		}
+
+		this.unbindDrag();
+
+		var stripMarkers = function (root) {
+			root.querySelectorAll('.drag-item-marker').forEach(function (marker) {
+				marker.remove();
 			});
-			el.addEventListener('drop', function (e) {
-				el.classList.remove('dc-conn-drop-target');
-				var fromId = e.dataTransfer.getData('text/dc-conn-collection');
-				if (!fromId) return;
-				e.preventDefault();
-				var ids = Array.from(self.collectionsEl.querySelectorAll('.dc-conn-collection')).map(function (node) {
-					return parseInt(node.getAttribute('data-collection-id'), 10);
-				});
-				var from = parseInt(fromId, 10);
-				var to = parseInt(el.getAttribute('data-collection-id'), 10);
-				var fromIdx = ids.indexOf(from);
-				var toIdx = ids.indexOf(to);
-				if (fromIdx < 0 || toIdx < 0 || fromIdx === toIdx) return;
-				ids.splice(toIdx, 0, ids.splice(fromIdx, 1)[0]);
-				postSilent('reorder_collections', { ids: ids }).then(function () {
-					return self.reload();
-				});
+		};
+
+		var setTargets = function (collectionsOn, itemsOn) {
+			self.collectionsEl.querySelectorAll('.dc-conn-treeview').forEach(function (el) {
+				el.classList.toggle('drag-items-target', collectionsOn);
 			});
+			self.collectionsEl.querySelectorAll('.dc-conn-items').forEach(function (el) {
+				el.classList.toggle('drag-items-target', itemsOn);
+			});
+		};
+
+		this.collectionsEl.querySelectorAll('.dc-conn-treeview').forEach(function (tree) {
+			Metro.makePlugin(tree, 'drag-items', {
+				dragItem: 'li.dc-conn-collection',
+				drawDragMarker: true,
+				dragMarker: '.dc-conn-drag[data-drag="collection"]',
+				canDrag: true,
+				clsDragItemAvatar: 'dc-conn-drag-avatar',
+				onDragStartItem: function () {
+					setTargets(true, false);
+				},
+				onDragDropItem: function () {
+					setTargets(true, true);
+					self.persistCollectionsOrder();
+				},
+			});
+			stripMarkers(tree);
 		});
 
 		this.collectionsEl.querySelectorAll('.dc-conn-items').forEach(function (list) {
-			list.addEventListener('dragover', function (e) {
-				if (e.dataTransfer.types.indexOf('text/dc-conn-item') !== -1) {
-					e.preventDefault();
-					list.classList.add('dc-conn-drop-target');
-				}
+			Metro.makePlugin(list, 'drag-items', {
+				dragItem: 'li.dc-conn-item',
+				/* true → старт только с dragMarker; Metro ещё дорисует .drag-item-marker — снимаем. */
+				drawDragMarker: true,
+				dragMarker: '.dc-conn-drag[data-drag="item"]',
+				canDrag: true,
+				clsDragItemAvatar: 'dc-conn-drag-avatar',
+				onDragStartItem: function () {
+					setTargets(false, true);
+				},
+				onDragDropItem: function () {
+					setTargets(true, true);
+					self.persistItemsOrder();
+				},
 			});
-			list.addEventListener('dragleave', function () {
-				list.classList.remove('dc-conn-drop-target');
-			});
-			list.addEventListener('drop', function (e) {
-				list.classList.remove('dc-conn-drop-target');
-				var itemId = parseInt(e.dataTransfer.getData('text/dc-conn-item'), 10);
-				if (!itemId) return;
-				e.preventDefault();
-				var targetCol = parseInt(list.getAttribute('data-items-for'), 10);
-				var payload = [];
-				self.collectionsEl.querySelectorAll('.dc-conn-items').forEach(function (ul) {
-					var colId = parseInt(ul.getAttribute('data-items-for'), 10);
-					ul.querySelectorAll('[data-item-id]').forEach(function (li) {
-						var id = parseInt(li.getAttribute('data-item-id'), 10);
-						payload.push({
-							id: id,
-							collection_id: id === itemId ? targetCol : colId,
-						});
-					});
-				});
-				if (!payload.some(function (row) { return row.id === itemId; })) {
-					payload.push({ id: itemId, collection_id: targetCol });
-				}
-				postSilent('reorder_items', { items: payload }).then(function () {
-					return self.reload();
-				});
-			});
+			stripMarkers(list);
 		});
+	};
 
-		this.collectionsEl.querySelectorAll('[data-item-id]').forEach(function (li) {
-			li.addEventListener('dragstart', function (e) {
-				e.stopPropagation();
-				e.dataTransfer.setData('text/dc-conn-item', li.getAttribute('data-item-id'));
-				e.dataTransfer.effectAllowed = 'move';
+	ConnectionsUI.prototype.persistCollectionsOrder = function () {
+		var ids = [];
+		this.collectionsEl.querySelectorAll('li.dc-conn-collection[data-collection-id]').forEach(function (li) {
+			ids.push(parseInt(li.getAttribute('data-collection-id'), 10));
+		});
+		if (!ids.length) return;
+		postSilent('reorder_collections', { ids: ids });
+	};
+
+	ConnectionsUI.prototype.persistItemsOrder = function () {
+		var payload = [];
+		this.collectionsEl.querySelectorAll('.dc-conn-items').forEach(function (ul) {
+			var colId = parseInt(ul.getAttribute('data-items-for'), 10);
+			ul.querySelectorAll('li.dc-conn-item[data-item-id]').forEach(function (li) {
+				payload.push({
+					id: parseInt(li.getAttribute('data-item-id'), 10),
+					collection_id: colId,
+				});
 			});
 		});
+		if (!payload.length) return;
+		postSilent('reorder_items', { items: payload });
 	};
 
 	ConnectionsUI.prototype.createCollection = function () {
 		var self = this;
-		askText(t('Новая сборка'), t('Название')).then(function (title) {
-			if (!title) return;
-			return post('save_collection', { title: title }).then(function () {
-				return self.reload();
+		this.pickNews().then(function (news) {
+			if (!news || !news.id) return null;
+			return askText(t('Новая сборка'), t('Название'), news.title || '').then(function (title) {
+				if (!title) return null;
+				return self.pickCollectionType(0).then(function (typeId) {
+					if (typeId === null) return null;
+					return post('save_collection', {
+						title: title,
+						type_id: typeId,
+						news_id: news.id,
+					});
+				});
 			});
+		}).then(function (payload) {
+			if (payload) return self.reload();
 		});
 	};
 
@@ -360,6 +552,21 @@
 		});
 	};
 
+	ConnectionsUI.prototype.setCollectionType = function (id) {
+		var self = this;
+		var col = this.tree.find(function (c) { return c.id === id; });
+		this.pickCollectionType(col ? (col.type_id || 0) : 0).then(function (typeId) {
+			if (typeId === null || !col) return null;
+			return post('save_collection', {
+				id: id,
+				title: col.title,
+				type_id: typeId,
+			});
+		}).then(function (payload) {
+			if (payload) return self.reload();
+		});
+	};
+
 	ConnectionsUI.prototype.deleteCollection = function (id) {
 		var self = this;
 		confirmDialog(t('Удалить сборку'), t('Удалить сборку и все её элементы?')).then(function (ok) {
@@ -367,6 +574,19 @@
 			return post('delete_collection', { id: id }).then(function () {
 				return self.reload();
 			});
+		});
+	};
+
+	ConnectionsUI.prototype.saveCollection = function (id) {
+		var self = this;
+		var col = this.tree.find(function (c) { return c.id === id; });
+		if (!col) return;
+		post('save_collection', {
+			id: id,
+			title: col.title,
+			type_id: col.type_id || 0,
+		}).then(function () {
+			return self.reload();
 		});
 	};
 
@@ -381,17 +601,68 @@
 		var self = this;
 		this.pickNews().then(function (news) {
 			if (!news) return null;
-			return self.pickRelationType().then(function (rtype) {
-				return post('save_item', {
-					collection_id: collectionId,
-					news_id: news.id,
-					relation_type: rtype || '',
-					is_visible: 1,
-				});
+			return post('save_item', {
+				collection_id: collectionId,
+				news_id: news.id,
+				relation_type: '',
+				is_visible: 1,
 			});
 		}).then(function (payload) {
 			if (payload) return self.reload();
 		});
+	};
+
+	ConnectionsUI.prototype.saveItem = function (id) {
+		var self = this;
+		var found = this.findItem(id);
+		if (!found) return;
+		post('save_item', {
+			id: id,
+			news_id: found.item.news_id,
+			relation_type: found.item.relation_type || '',
+			is_visible: found.item.is_visible ? 1 : 0,
+		}).then(function () {
+			return self.reload();
+		});
+	};
+
+	ConnectionsUI.prototype.replaceItemNews = function (id) {
+		var self = this;
+		this.pickNews().then(function (news) {
+			if (!news) return null;
+			return post('save_item', { id: id, news_id: news.id });
+		}).then(function (payload) {
+			if (payload) return self.reload();
+		});
+	};
+
+	ConnectionsUI.prototype.copyItem = function (id) {
+		var self = this;
+		var found = this.findItem(id);
+		if (!found) return;
+		this.pickTargetCollection(found.collectionId).then(function (targetId) {
+			if (!targetId) return null;
+			return post('save_item', {
+				collection_id: targetId,
+				news_id: found.item.news_id,
+				relation_type: found.item.relation_type || '',
+				is_visible: found.item.is_visible ? 1 : 0,
+			});
+		}).then(function (payload) {
+			if (payload) return self.reload();
+		});
+	};
+
+	ConnectionsUI.prototype.findItem = function (itemId) {
+		var found = null;
+		this.tree.forEach(function (col) {
+			(col.items || []).forEach(function (item) {
+				if (item.id === itemId) {
+					found = { item: item, collectionId: col.id };
+				}
+			});
+		});
+		return found;
 	};
 
 	ConnectionsUI.prototype.deleteItem = function (id) {
@@ -421,8 +692,34 @@
 		});
 	};
 
+	ConnectionsUI.prototype.pickTargetCollection = function (excludeId) {
+		var options = this.tree.filter(function (col) {
+			return col.id !== excludeId;
+		}).map(function (col) {
+			return { value: String(col.id), label: col.title };
+		});
+		if (!options.length) {
+			if (window.DevCraft && DevCraft.Notify && typeof DevCraft.Notify.warning === 'function') {
+				DevCraft.Notify.warning(t('Связи'), t('Нет другой сборки для копирования'));
+			}
+			return Promise.resolve(null);
+		}
+		return selectDialog(
+			t('Копировать в сборку'),
+			t('Сборка'),
+			options,
+			options[0].value,
+			t('Копировать'),
+			'dc-conn-tpl-select-collection',
+			'dc-conn-select-collection'
+		)
+			.then(function (val) {
+				if (val === null || val === '') return null;
+				return parseInt(val, 10) || null;
+			});
+	};
+
 	ConnectionsUI.prototype.pickNews = function () {
-		var self = this;
 		return new Promise(function (resolve) {
 			var settled = false;
 			var pending;
@@ -431,30 +728,31 @@
 				settled = true;
 				resolve(value);
 			}
-			Metro.dialogCreate({
+			var frag = cloneTemplate('dc-conn-tpl-search-news');
+			if (!frag || !Metro || typeof Metro.dialogCreate !== 'function') {
+				done(null);
+				return;
+			}
+			var dlg = Metro.dialogCreate({
 				title: t('Поиск новости'),
-				content: '<input type="search" id="dc-conn-news-q" class="metro-input mb-2" style="width:100%" placeholder="'
-					+ escapeHtml(t('Название или ID')) + '" />'
-					+ '<div id="dc-conn-news-results" class="list-group" style="max-height:240px;overflow:auto"></div>',
+				content: fragmentToHtml(frag),
 				closeButton: true,
 				defaultActions: false,
+				removeOnClose: true,
 				onOpen: function () {
 					var input = document.getElementById('dc-conn-news-q');
 					var box = document.getElementById('dc-conn-news-results');
 					var timer = null;
 					function runSearch() {
 						var q = input ? input.value.trim() : '';
+						if (!box) return;
 						if (q.length < 1) {
-							box.innerHTML = '';
+							box.textContent = '';
 							return;
 						}
 						postSilent('search_news', { q: q }).then(function (payload) {
-							var items = (payload && payload.data && payload.data.items) || [];
-							box.innerHTML = items.map(function (row) {
-								return '<button type="button" class="list-group-item list-group-item-action" data-news-id="'
-									+ row.id + '" data-news-title="' + escapeHtml(row.title) + '">#'
-									+ row.id + ' — ' + escapeHtml(row.title) + '</button>';
-							}).join('') || '<div class="text-muted p-2">' + escapeHtml(t('Ничего не найдено')) + '</div>';
+							var html = payload && payload.data && payload.data.html;
+							box.innerHTML = typeof html === 'string' ? html : '';
 						});
 					}
 					if (input) {
@@ -473,8 +771,7 @@
 								title: btn.getAttribute('data-news-title') || '',
 							};
 							done(pending);
-							var closeBtn = document.querySelector('.js-dialog-close');
-							if (closeBtn) closeBtn.click();
+							closeDialog(dlg);
 						});
 					}
 				},
@@ -488,68 +785,63 @@
 						onclick: function () {
 							pending = null;
 							done(null);
+							closeDialog(dlg);
 						},
 					},
 				],
+			});
+			bindDialogCloser(dlg, function () {
+				pending = null;
+				done(null);
 			});
 		});
 	};
 
 	ConnectionsUI.prototype.pickRelationType = function () {
-		var self = this;
-		return new Promise(function (resolve) {
-			var options = (self.types || []).map(function (type) {
-				return '<option value="' + escapeHtml(type.name) + '">' + escapeHtml(type.name) + '</option>';
-			}).join('');
-			var pending;
-			var settled = false;
-			function done(value) {
-				if (settled) return;
-				settled = true;
-				resolve(value);
-			}
-			Metro.dialogCreate({
-				title: t('Тип связи'),
-				content: '<label class="d-block mb-1">' + escapeHtml(t('Тип')) + '</label>'
-					+ '<select id="dc-conn-rtype" class="metro-input" style="width:100%">'
-					+ '<option value="">' + escapeHtml(t('— без типа —')) + '</option>'
-					+ options + '</select>',
-				closeButton: true,
-				defaultActions: false,
-				onClose: function () {
-					done(pending === undefined ? null : pending);
-				},
-				customButtons: [
-					{
-						text: t('Выбрать'),
-						cls: 'primary js-dialog-close',
-						onclick: function () {
-							var el = document.getElementById('dc-conn-rtype');
-							pending = el ? String(el.value) : '';
-							done(pending);
-						},
-					},
-					{
-						text: t('Отмена'),
-						cls: 'js-dialog-close',
-						onclick: function () {
-							pending = null;
-							done(null);
-						},
-					},
-				],
+		var options = [{ value: '', label: t('— без типа —') }].concat(
+			(this.relationTypes || []).map(function (type) {
+				return { value: type.name, label: type.name };
+			})
+		);
+		return selectDialog(
+			t('Тип связи'),
+			t('Тип'),
+			options,
+			'',
+			t('Выбрать'),
+			'dc-conn-tpl-select-relation',
+			'dc-conn-select-relation'
+		);
+	};
+
+	ConnectionsUI.prototype.pickCollectionType = function (currentId) {
+		var selected = parseInt(currentId || 0, 10) || 0;
+		var options = [{ value: '0', label: t('— без категории —') }].concat(
+			(this.collectionTypes || []).map(function (type) {
+				return { value: String(type.id), label: type.name };
+			})
+		);
+		return selectDialog(
+			t('Категория сборки'),
+			t('Категория'),
+			options,
+			String(selected),
+			t('Выбрать'),
+			'dc-conn-tpl-select-collection',
+			'dc-conn-select-collection'
+		)
+			.then(function (val) {
+				if (val === null) return null;
+				return parseInt(val, 10) || 0;
 			});
-		});
 	};
 
 	function RelationTypesUI(root) {
 		this.root = root;
-		this.list = root.querySelector('[data-dc-conn-rtype-list]');
 		this.bind();
 	}
 
 	RelationTypesUI.prototype.bind = function () {
-		var self = this;
 		var add = this.root.querySelector('[data-dc-conn-rtype-add]');
 		if (add) {
 			add.addEventListener('click', function () {
@@ -587,87 +879,49 @@
 		});
 	};
 
-	function NewsFormUI(root) {
+	function CollectionTypesUI(root) {
 		this.root = root;
-		this.newsId = parseInt(root.getAttribute('data-news-id') || '0', 10);
-		this.box = root.querySelector('[data-dc-conn-news-tree]');
-		this.assets = root.getAttribute('data-assets-base') || '';
 		this.bind();
-		this.reload();
 	}
 
-	NewsFormUI.prototype.bind = function () {
-		var self = this;
-		var add = this.root.querySelector('[data-dc-conn-news-add]');
+	CollectionTypesUI.prototype.bind = function () {
+		var add = this.root.querySelector('[data-dc-conn-ctype-add]');
 		if (add) {
 			add.addEventListener('click', function () {
-				self.quickAdd();
+				askText(t('Новая категория сборки'), t('Название')).then(function (name) {
+					if (!name) return;
+					return post('collection_types', { action: 'create', name: name }).then(function () {
+						location.reload();
+					});
+				});
 			});
 		}
-	};
-
-	NewsFormUI.prototype.reload = function () {
-		var self = this;
-		if (!this.box || this.newsId <= 0) return;
-		postSilent('tree', { news_id: this.newsId }).then(function (payload) {
-			var tree = (payload && payload.data && payload.data.tree) || [];
-			var related = tree.filter(function (col) {
-				return (col.items || []).some(function (item) {
-					return item.news_id === self.newsId;
+		this.root.addEventListener('click', function (e) {
+			var rename = e.target.closest('[data-dc-conn-ctype-rename]');
+			var del = e.target.closest('[data-dc-conn-ctype-delete]');
+			var row = e.target.closest('[data-id]');
+			if (!row) return;
+			var id = parseInt(row.getAttribute('data-id'), 10);
+			if (rename) {
+				var current = row.querySelector('.dc-conn-ctype-name');
+				askText(t('Переименовать категорию'), t('Название'), current ? current.textContent : '').then(function (name) {
+					if (!name) return;
+					return post('collection_types', { action: 'update', id: id, name: name }).then(function () {
+						location.reload();
+					});
 				});
-			});
-			if (!related.length) {
-				self.box.innerHTML = '<p class="text-muted">' + escapeHtml(t('Новость пока не входит ни в одну сборку')) + '</p>';
-				return;
 			}
-			self.box.innerHTML = related.map(function (col) {
-				return '<div class="mb-2"><strong>' + escapeHtml(col.title) + '</strong></div>';
-			}).join('');
-		});
-	};
-
-	NewsFormUI.prototype.quickAdd = function () {
-		var self = this;
-		postSilent('tree', {}).then(function (payload) {
-			var tree = (payload && payload.data && payload.data.tree) || [];
-			var options = tree.map(function (col) {
-				return '<option value="' + col.id + '">' + escapeHtml(col.title) + '</option>';
-			}).join('');
-			if (!options) {
-				Metro.dialogCreate({
-					title: t('Связи'),
-					content: '<p>' + escapeHtml(t('Сначала создайте сборку в модуле Connections')) + '</p>',
-					closeButton: true,
+			if (del) {
+				confirmDialog(
+					t('Удалить категорию'),
+					t('Удалить категорию? У сборок type_id сбросится в «без категории».')
+				).then(function (ok) {
+					if (!ok) return;
+					return post('collection_types', { action: 'delete', id: id }).then(function () {
+						location.reload();
+					});
 				});
-				return;
 			}
-			var pending = null;
-			Metro.dialogCreate({
-				title: t('Добавить в сборку'),
-				content: '<select id="dc-conn-pick-col" class="metro-input" style="width:100%">' + options + '</select>',
-				closeButton: true,
-				defaultActions: false,
-				customButtons: [
-					{
-						text: t('Добавить'),
-						cls: 'primary js-dialog-close',
-						onclick: function () {
-							var el = document.getElementById('dc-conn-pick-col');
-							pending = el ? parseInt(el.value, 10) : 0;
-							if (pending) {
-								post('save_item', {
-									collection_id: pending,
-									news_id: self.newsId,
-									is_visible: 1,
-								}).then(function () {
-									self.reload();
-								});
-							}
-						},
-					},
-					{ text: t('Отмена'), cls: 'js-dialog-close' },
-				],
-			});
 		});
 	};
 
@@ -675,12 +929,11 @@
 		document.querySelectorAll('#dc-conn-dashboard').forEach(function (el) {
 			new ConnectionsUI(el);
 		});
-		document.querySelectorAll('[data-dc-conn-settings]').forEach(function (el) {
+		document.querySelectorAll('[data-dc-conn-rtype-page]').forEach(function (el) {
 			new RelationTypesUI(el);
 		});
-		document.querySelectorAll('[data-dc-conn-embed]').forEach(function (el) {
-			document.body.dataset.mod = document.body.dataset.mod || 'Connections';
-			new NewsFormUI(el);
+		document.querySelectorAll('[data-dc-conn-ctype-page]').forEach(function (el) {
+			new CollectionTypesUI(el);
 		});
 	}
 

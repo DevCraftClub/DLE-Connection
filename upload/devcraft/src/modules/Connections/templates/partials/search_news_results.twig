@@ -1,0 +1,12 @@
+{% if items is empty %}
+	<div class="text-muted p-2">{{ 'Ничего не найдено'|trans }}</div>
+{% else %}
+	{% for row in items %}
+		<button type="button"
+				class="list-group-item list-group-item-action"
+				data-news-id="{{ row.id }}"
+				data-news-title="{{ row.title|e('html_attr') }}">
+			#{{ row.id }} — {{ row.title }}
+		</button>
+	{% endfor %}
+{% endif %}

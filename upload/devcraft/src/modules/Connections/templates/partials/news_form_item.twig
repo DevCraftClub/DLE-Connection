@@ -1,0 +1,50 @@
+{% set meta = item.relation_type|default('')|trim %}
+{% set is_current = item.is_current|default(false) %}
+{% set is_visible = item.is_visible is defined ? item.is_visible : true %}
+{% set vis_svg = is_visible ? 'visibility-on.svg' : 'visibility-off.svg' %}
+{% set nid = item.news_id|default(0) %}
+{% set edit_url = admin_edit_news_url|default('') %}
+<div class="dc-conn-nf-item{% if not is_visible %} is-hidden{% endif %}{% if is_current %} is-focus{% endif %}"
+	{% if is_current %}data-dc-conn-nf-current="1"{% endif %}
+	{% if item.news_id is defined %}data-news-id="{{ item.news_id }}"{% endif %}>
+	<span class="dd-handles dc-conn-nf-drag" data-drag="item" title="{{ 'Перетащить'|trans }}" aria-label="{{ 'Перетащить'|trans }}">
+		<img src="{{ assets_base }}/drag-handle.svg" alt="" width="14" height="14">
+	</span>
+	<span class="dc-conn-nf-thumb" aria-hidden="true"></span>
+	<div class="dc-conn-nf-item-body">
+		<div class="dc-conn-nf-item-title">{{ item.news_title|default(news_title|default('')) }}</div>
+		{# Текущая новость не имеет типа связи к себе. #}
+		{% if not is_current %}
+			<span class="dc-conn-nf-item-meta-row">
+				<span class="dc-conn-nf-item-meta{% if not meta %} is-empty{% endif %}"
+					 data-dc-conn-nf-meta
+					 data-action="edit-type"
+					 title="{{ 'Тип связи'|trans }}">
+					{{ meta ? meta : ('Тип связи не задан'|trans) }}
+				</span>
+				<button type="button" class="btn btn-default btn-xs btn-raised dc-conn-nf-icon-btn" data-action="edit-type" title="{{ 'Тип связи'|trans }}">
+					<img src="{{ assets_base }}/select.svg" alt="" width="14" height="14">
+				</button>
+			</span>
+		{% endif %}
+	</div>
+	<span class="dc-conn-nf-actions" data-dc-conn-nf-actions>
+		{% if nid > 0 and edit_url %}
+			<a class="btn btn-default btn-xs btn-raised dc-conn-nf-icon-btn" href="{{ edit_url|replace({'__ID__': nid ~ ''}) }}" target="_blank" rel="noopener noreferrer" title="{{ 'Открыть в админке'|trans }}">
+				<img src="{{ assets_base }}/open-news.svg" alt="" width="14" height="14">
+			</a>
+		{% endif %}
+		<button type="button" class="btn btn-default btn-xs btn-raised" data-action="replace-news" title="{{ 'Сменить новость'|trans }}">
+			<img src="{{ assets_base }}/search-news.svg" alt="" width="14" height="14">
+		</button>
+		<button type="button" class="btn btn-default btn-xs btn-raised" data-action="toggle-vis" title="{{ is_visible ? ('Скрыть'|trans) : ('Показать'|trans) }}">
+			<img src="{{ assets_base }}/{{ vis_svg }}" alt="" width="14" height="14" data-dc-conn-nf-eye>
+		</button>
+		<button type="button" class="btn btn-default btn-xs btn-raised" data-action="copy-item" title="{{ 'Копировать в другую сборку'|trans }}">
+			<img src="{{ assets_base }}/copy.svg" alt="" width="14" height="14">
+		</button>
+		<button type="button" class="btn btn-danger btn-xs btn-raised" data-action="remove-item" title="{{ 'Убрать из сборки'|trans }}">
+			<img src="{{ assets_base }}/delete.svg" alt="" width="14" height="14">
+		</button>
+	</span>
+</div>

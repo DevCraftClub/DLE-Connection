@@ -1,0 +1,10 @@
+{% if blocks is empty %}
+	<div class="dc-conn-nf-empty">{{ 'Пока нет участий в сборках'|trans }}</div>
+{% else %}
+	{% for block in blocks %}
+		{% include '@connections/partials/news_form_collection.twig' with block|merge({
+			assets_base: assets_base,
+			admin_edit_news_url: admin_edit_news_url|default('')
+		}) only %}
+	{% endfor %}
+{% endif %}

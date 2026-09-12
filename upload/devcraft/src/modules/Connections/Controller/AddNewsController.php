@@ -4,8 +4,6 @@ declare(strict_types=1);
 
 namespace DevCraft\Modules\Connections\Controller;
 
-use DevCraft\Modules\Connections\Services\CollectionService;
-
 /**
  * Виджет связей на публичной форме добавления новости.
  */
@@ -16,12 +14,6 @@ final class AddNewsController {
 	 */
 	public function render(): string {
 		global $tpl, $config;
-
-		$collections = new CollectionService();
-
-		if(!$collections->isEnabled()) {
-			return '';
-		}
 
 		if(!isset($tpl) || !is_object($tpl)) {
 			if(!class_exists('dle_template', false)) {

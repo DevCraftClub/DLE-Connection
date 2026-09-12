@@ -1,49 +1,124 @@
+/**
+ * Дерево сборок Connections (иконки из Public/*.svg + Metro drag-items).
+ */
+
 .dc-conn-dashboard .dc-conn-tree {
-	display: flex;
-	flex-direction: column;
-	gap: 0.75rem;
+	display: block;
+}
+
+.dc-conn-treeview {
+	list-style: none;
+	margin: 0;
+	padding: 0;
+	/* Metro .treeview { overflow:hidden } обрезает линию связей слева */
+	overflow: visible !important;
+}
+
+.dc-conn-treeview > .dc-conn-collection {
+	margin: 0 0 1.15rem;
+	overflow: visible;
+}
+
+.dc-conn-treeview > .dc-conn-collection + .dc-conn-collection {
+	padding-top: 0.85rem;
+	border-top: 1px dashed rgba(0, 0, 0, 0.18);
 }
 
 .dc-conn-collection {
-	border: 1px solid rgba(0, 0, 0, 0.12);
-	border-radius: 6px;
-	background: #fff;
+	background: transparent;
+	list-style: none;
+	overflow: visible;
+}
+
+.dc-conn-collection + .dc-conn-collection {
+	padding-top: 0.85rem;
+	border-top: 1px dashed rgba(0, 0, 0, 0.18);
 }
 
 .dc-conn-collection-head {
 	display: flex;
 	align-items: center;
 	gap: 0.5rem;
-	padding: 0.65rem 0.75rem;
-	border-bottom: 1px solid rgba(0, 0, 0, 0.08);
-	background: #f8f9fa;
+	padding: 0.55rem 0.7rem;
+	border: 1px solid rgba(0, 0, 0, 0.16);
+	border-radius: 6px;
+	background: #f7f7f7;
 }
 
 .dc-conn-collection-head .dc-conn-title {
 	font-weight: 600;
 	flex: 1;
+	min-width: 0;
 }
 
+.dc-conn-type-chip {
+	flex: 0 0 auto;
+	max-width: 12rem;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
+/*
+ * Отступ + L-линия: Metro `.treeview ul { padding:0 }` сильнее обычного правила —
+ * нужен !important и overflow:visible, иначе псевдоэлементы не видны.
+ */
+.dc-conn-treeview ul.dc-conn-items,
 .dc-conn-items {
+	position: relative;
 	list-style: none;
-	margin: 0;
-	padding: 0.35rem 0.5rem 0.5rem;
-	min-height: 2.5rem;
+	margin: 0 !important;
+	padding: 0.65rem 0 0.25rem 1.85rem !important;
+	min-height: 1.5rem;
+	overflow: visible !important;
+	background: transparent !important;
+}
+
+.dc-conn-treeview ul.dc-conn-items::before,
+.dc-conn-items::before {
+	content: '';
+	position: absolute;
+	left: 0.7rem;
+	top: 0;
+	bottom: 0.55rem;
+	width: 0;
+	border-left: 1px dashed rgba(0, 0, 0, 0.35);
+	pointer-events: none;
+	z-index: 0;
 }
 
 .dc-conn-item {
-	display: flex;
+	position: relative;
+	display: flex !important; /* Metro .treeview li { display:block } ломает ряд */
 	align-items: center;
-	gap: 0.4rem;
-	padding: 0.4rem 0.45rem;
-	border-radius: 4px;
-	margin-bottom: 0.25rem;
+	gap: 0.55rem;
+	padding: 0.5rem 0.6rem;
+	border-radius: 6px;
+	margin-bottom: 0.45rem;
 	background: #fff;
-	border: 1px solid transparent;
+	border: 1px solid rgba(0, 0, 0, 0.12);
+	z-index: 1;
+}
+
+.dc-conn-item::before {
+	content: '';
+	position: absolute;
+	left: -1.15rem;
+	top: 50%;
+	width: 1.05rem;
+	height: 0;
+	border-top: 1px dashed rgba(0, 0, 0, 0.35);
+	pointer-events: none;
+	z-index: 0;
+}
+
+.dc-conn-collection-foot {
+	padding: 0.15rem 0 0.25rem 1.85rem;
+	text-align: right;
 }
 
 .dc-conn-item:hover {
-	border-color: rgba(0, 0, 0, 0.1);
+	border-color: rgba(0, 0, 0, 0.22);
 	background: #fafafa;
 }
 
@@ -56,31 +131,153 @@
 	background: #eef8fc;
 }
 
-.dc-conn-drag {
+.dc-conn-thumb {
+	flex: 0 0 36px;
+	display: block;
+	width: 36px;
+	height: 36px;
+	border: 1px solid rgba(0, 0, 0, 0.12);
+	border-radius: 4px;
+	background: #f0f0f0
+		url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23bbb'%3E%3Cpath d='M21 19V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z'/%3E%3C/svg%3E")
+		center / 18px no-repeat;
+}
+
+.dc-conn-item-body {
+	flex: 1 1 auto;
+	min-width: 0;
+	display: flex;
+	flex-direction: column;
+	gap: 0.15rem;
+}
+
+.dc-conn-item-title {
+	font-weight: 600;
+	font-size: 0.92rem;
+	line-height: 1.25;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.dc-conn-item-meta-row {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.25rem;
+	min-width: 0;
+}
+
+.dc-conn-item-meta {
+	font-size: 0.75rem;
+	color: #888;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.dc-conn-item-meta.is-empty {
+	font-style: italic;
+	color: #aaa;
+}
+
+/*
+ * Ручка DnD = тот же button.cycle.outline.dc-conn-icon-btn, без Metro .drag-item-marker.
+ */
+.dc-conn-collection-head .dc-conn-drag.dc-conn-icon-btn,
+.dc-conn-item .dc-conn-drag.dc-conn-icon-btn {
+	flex: 0 0 30px;
 	cursor: grab;
-	opacity: 0.7;
-	flex: 0 0 auto;
+	user-select: none;
+	touch-action: none;
+	margin: 0;
+}
+
+.dc-conn-collection-head .dc-conn-drag.dc-conn-icon-btn:active,
+.dc-conn-item .dc-conn-drag.dc-conn-icon-btn:active {
+	cursor: grabbing;
+}
+
+.dc-conn-collection-head .dc-conn-drag.dc-conn-icon-btn img,
+.dc-conn-item .dc-conn-drag.dc-conn-icon-btn img {
+	pointer-events: none;
+}
+
+.dc-conn-treeview > .dc-conn-collection.dragged-item {
+	opacity: 0.35;
+}
+
+/* Metro drag-items: исходный ряд при перетаскивании */
+.dc-conn-items .dc-conn-item.dragged-item {
+	opacity: 0.35;
+}
+
+.dc-conn-drag-avatar,
+.dragged-item-avatar.dc-conn-drag-avatar {
+	box-sizing: border-box;
+	border: 1px solid rgba(27, 161, 226, 0.55);
+	border-radius: 6px;
+	background: rgba(255, 255, 255, 0.95);
+	box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18);
+	opacity: 0.92;
+	pointer-events: none;
+	z-index: 2000;
 }
 
 .dc-conn-actions {
 	display: inline-flex;
-	gap: 0.25rem;
+	gap: 0.2rem;
 	margin-left: auto;
+	flex: 0 0 auto;
+	align-items: center;
 }
 
-.dc-conn-actions .button.cycle {
-	width: 28px;
-	height: 28px;
-	padding: 0;
+/* Metro .button даёт gap:8px и line-height — у cycle+img (особенно <a>) иконка уезжает. */
+.dc-conn-icon-btn {
+	width: var(--control-height, 36px);
+	height: var(--control-height, 36px);
+	min-width: var(--control-height, 36px);
+	min-height: var(--control-height, 36px);
+	padding: 0 !important;
+	display: inline-flex !important;
+	align-items: center;
+	justify-content: center;
+	gap: 0 !important;
+	line-height: 0;
+	text-decoration: none;
+	box-sizing: border-box;
+	flex-shrink: 0;
 }
 
-.dc-conn-item-meta {
-	font-size: 0.8rem;
-	color: #888;
+a.dc-conn-icon-btn {
+	color: inherit;
 }
 
-.dc-conn-drop-target {
-	outline: 2px dashed #1ba1e2;
+.dc-conn-icon-btn img {
+	width: 16px;
+	height: 16px;
+	display: block;
+	margin: 0;
+	flex: 0 0 auto;
+	pointer-events: none;
+}
+
+.dc-conn-item-meta-row .dc-conn-icon-btn {
+	width: 24px;
+	height: 24px;
+	min-width: 24px;
+	min-height: 24px;
+}
+
+.dc-conn-item-meta-row .dc-conn-icon-btn img {
+	width: 14px;
+	height: 14px;
+}
+
+.dc-conn-collection-foot .button img {
+	width: 14px;
+	height: 14px;
+	vertical-align: -2px;
+	margin-right: 4px;
 }
 
 .dc-conn-empty {

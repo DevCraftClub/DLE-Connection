@@ -9,6 +9,7 @@ use DevCraft\Core\Http\JsonResponse;
 use DevCraft\Core\Interfaces\AjaxHandlerInterface;
 use DevCraft\Core\Interfaces\ResponseInterface;
 use DevCraft\Modules\Connections\Services\NewsLookupService;
+use DevCraft\Modules\Connections\Services\TreeViewService;
 use Throwable;
 
 /**
@@ -20,9 +21,11 @@ final class SearchNewsHandler implements AjaxHandlerInterface {
 		try {
 			$query = (string) ($request->data['q'] ?? $request->data['query'] ?? '');
 			$limit = (int) ($request->data['limit'] ?? 20);
+			$items = NewsLookupService::search($query, $limit);
 
 			return JsonResponse::ok([
-				'items' => NewsLookupService::search($query, $limit),
+				'items' => $items,
+				'html'  => (new TreeViewService())->renderSearchResults($items),
 			]);
 		} catch(Throwable $e) {
 			return JsonResponse::fail(__('Ошибка'), $e->getMessage(), 'error', 400);

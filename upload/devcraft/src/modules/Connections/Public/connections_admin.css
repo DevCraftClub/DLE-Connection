@@ -1,0 +1,320 @@
+/**
+ * Вкладка «Связи» на addnews/editnews (DLE Limitless).
+ * Кнопки — btn Limitless; иконки — те же SVG, что в админке Connections.
+ */
+
+.dc-conn-news-form {
+	margin: 0 0 1rem;
+}
+
+.dc-conn-nf-hint {
+	margin: 0 0 12px;
+	color: #999;
+	font-size: 12px;
+}
+
+.dc-conn-nf-toolbar {
+	margin-bottom: 14px;
+}
+
+.dc-conn-nf-toolbar .btn {
+	color: #fff !important;
+}
+
+.dc-conn-nf-toolbar .btn img {
+	vertical-align: -2px;
+	margin-right: 6px;
+}
+
+.dc-conn-nf-actions .btn img {
+	display: block;
+	pointer-events: none;
+}
+
+.dc-conn-nf-head .dc-conn-nf-actions {
+	margin-left: auto;
+}
+
+.dc-conn-nf-list {
+	display: flex;
+	flex-direction: column;
+	gap: 18px;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.dc-conn-nf-empty {
+	padding: 12px 0;
+	color: #999;
+	font-size: 13px;
+}
+
+.dc-conn-nf-collection {
+	margin: 0;
+	padding: 0;
+}
+
+.dc-conn-nf-head {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 8px 10px;
+	border: 1px solid #ddd;
+	border-radius: 6px;
+	background: #f7f7f7;
+}
+
+.dc-conn-nf-head-mark {
+	flex: 0 0 auto;
+	width: 18px;
+	height: 18px;
+	opacity: 0.45;
+	background: currentColor;
+	-webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23000' d='M8 6h2v2H8V6zm0 5h2v2H8v-2zm0 5h2v2H8v-2zm5-10h2v2h-2V6zm0 5h2v2h-2v-2zm0 5h2v2h-2v-2z'/%3E%3C/svg%3E") center / contain no-repeat;
+	mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Cpath fill='%23000' d='M8 6h2v2H8V6zm0 5h2v2H8v-2zm0 5h2v2H8v-2zm5-10h2v2h-2V6zm0 5h2v2h-2v-2zm0 5h2v2h-2v-2z'/%3E%3C/svg%3E") center / contain no-repeat;
+}
+
+.dc-conn-nf-title {
+	flex: 1 1 auto;
+	min-width: 0;
+	font-weight: 600;
+	font-size: 13px;
+	line-height: 1.3;
+	color: #333;
+}
+
+.dc-conn-nf-actions {
+	display: inline-flex;
+	align-items: center;
+	flex-wrap: wrap;
+	gap: 4px;
+	margin-left: auto;
+	flex: 0 0 auto;
+}
+
+.dc-conn-nf-item > .dc-conn-nf-actions {
+	flex: 1 0 100%;
+	justify-content: flex-end;
+	margin-left: 0;
+	padding-left: 46px;
+	order: 5;
+}
+
+.dc-conn-nf-actions .btn {
+	padding: 4px 7px;
+	min-width: 30px;
+}
+
+/* Как DLE .dd-handles в #rubriclist — не button, иначе Sortable/native drag не стартует. */
+.dc-conn-nf-item > .dd-handles.dc-conn-nf-drag {
+	flex: 0 0 auto;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	width: 30px;
+	min-height: 24px;
+	padding: 4px 0;
+	margin: 0;
+	border: 0;
+	background: transparent;
+	cursor: move;
+	user-select: none;
+	touch-action: none;
+	-webkit-user-drag: none;
+}
+
+.dc-conn-nf-drag:active {
+	cursor: grabbing;
+}
+
+.dc-conn-nf-item.dc-conn-nf-ghost,
+.dc-conn-nf-item.sortable-ghost {
+	opacity: 0.45;
+	background: #e8f5f3;
+	border-style: dashed;
+}
+
+.dc-conn-nf-item.sortable-chosen {
+	box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+}
+
+.dc-conn-nf-item.is-sorting {
+	z-index: 5;
+}
+
+.dc-conn-nf-drag img {
+	display: block;
+	pointer-events: none;
+}
+
+.dc-conn-nf-tree {
+	position: relative;
+	margin: 0;
+	padding: 8px 0 0 22px;
+	list-style: none;
+}
+
+.dc-conn-nf-tree::before {
+	content: '';
+	position: absolute;
+	left: 8px;
+	top: 0;
+	bottom: 10px;
+	border-left: 1px dashed #c5c5c5;
+}
+
+.dc-conn-nf-item {
+	position: relative;
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 8px 10px;
+	margin: 0 0 8px;
+	padding: 8px 10px;
+	border: 1px solid #e0e0e0;
+	border-radius: 6px;
+	background: #fff;
+}
+
+.dc-conn-nf-item::before {
+	content: '';
+	position: absolute;
+	left: -14px;
+	top: 50%;
+	width: 12px;
+	border-top: 1px dashed #c5c5c5;
+}
+
+.dc-conn-nf-item.is-hidden {
+	opacity: 0.55;
+}
+
+.dc-conn-nf-item.is-focus {
+	border-color: #26a69a;
+	background: #f3faf9;
+	box-shadow: inset 3px 0 0 #26a69a;
+}
+
+.dc-conn-nf-item-meta[data-action="edit-type"] {
+	cursor: pointer;
+	text-decoration: underline dotted;
+	color: #555;
+}
+
+.dc-conn-nf-item-meta[data-action="edit-type"]:hover {
+	color: #00897b;
+}
+
+.dc-conn-nf-thumb {
+	flex: 0 0 auto;
+	width: 36px;
+	height: 36px;
+	border: 1px solid #ddd;
+	border-radius: 4px;
+	background: #f0f0f0
+		url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23bbb'%3E%3Cpath d='M21 19V5a2 2 0 0 0-2-2H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z'/%3E%3C/svg%3E")
+		center / 18px no-repeat;
+}
+
+.dc-conn-nf-item-body {
+	flex: 1 1 auto;
+	min-width: 0;
+}
+
+.dc-conn-nf-item-meta-row {
+	display: inline-flex;
+	align-items: center;
+	gap: 4px;
+	min-width: 0;
+	max-width: 100%;
+	margin-top: 2px;
+}
+
+.dc-conn-nf-item-meta-row .dc-conn-nf-item-meta {
+	margin-top: 0;
+	flex: 1 1 auto;
+	min-width: 0;
+}
+
+.dc-conn-nf-icon-btn {
+	flex: 0 0 auto;
+	padding: 2px 5px !important;
+	min-width: 26px !important;
+}
+
+.dc-conn-nf-icon-btn img {
+	display: block;
+	pointer-events: none;
+}
+
+.dc-conn-nf-icon-static {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	flex: 0 0 auto;
+	width: 26px;
+	height: 26px;
+	opacity: 0.72;
+}
+
+.dc-conn-nf-icon-static img {
+	display: block;
+	pointer-events: none;
+}
+
+.dc-conn-nf-item-title {
+	font-size: 13px;
+	font-weight: 600;
+	line-height: 1.25;
+	color: #333;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.dc-conn-nf-item-meta {
+	margin-top: 2px;
+	font-size: 11px;
+	color: #888;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+
+.dc-conn-nf-item-meta.is-empty {
+	font-style: italic;
+	color: #aaa;
+}
+
+.dc-conn-nf-foot {
+	margin: 4px 0 0 22px;
+	text-align: left;
+}
+
+.dc-conn-nf-foot .btn img {
+	display: inline-block;
+	vertical-align: -2px;
+	margin-right: 4px;
+	pointer-events: none;
+}
+
+.dc-conn-nf-actions a.dc-conn-nf-icon-btn {
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	padding: 4px 7px;
+	min-width: 30px;
+}
+
+.dc-conn-nf-search-results {
+	max-height: 280px;
+	overflow: auto;
+	margin-top: 8px;
+}
+
+.dc-conn-nf-search-results .list-group-item {
+	cursor: pointer;
+	text-align: left;
+}
+
