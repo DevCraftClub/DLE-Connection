@@ -5,10 +5,10 @@ declare(strict_types=1);
 namespace DevCraft\Modules\Connections\Services;
 
 use DevCraft\Core\Application;
+use DevCraft\Core\Http\JsonResponse;
 use DevCraft\Core\Support\DataManager;
 use DevCraft\Modules\Connections\Models\ConnectionCollectionType;
 use DevCraft\Modules\Connections\Repositories\ConnectionCollectionTypeRepository;
-use RuntimeException;
 
 /**
  * CRUD категорий сборок (`type_id`).
@@ -26,11 +26,21 @@ final class CollectionTypeService {
 		$name = trim($name);
 
 		if($name === '') {
-			throw new RuntimeException(__('Название категории сборки не может быть пустым'));
+			JsonResponse::abort(
+				__('Ошибка'),
+				__('Название категории сборки не может быть пустым'),
+				'validation_failed',
+				422,
+			);
 		}
 
 		if(mb_strlen($name) > 100) {
-			throw new RuntimeException(__('Название категории сборки слишком длинное'));
+			JsonResponse::abort(
+				__('Ошибка'),
+				__('Название категории сборки слишком длинное'),
+				'validation_failed',
+				422,
+			);
 		}
 
 		return $name;
@@ -43,15 +53,30 @@ final class CollectionTypeService {
 		$slug = strtolower(trim($slug));
 
 		if($slug === '') {
-			throw new RuntimeException(__('Slug категории не может быть пустым'));
+			JsonResponse::abort(
+				__('Ошибка'),
+				__('Slug категории не может быть пустым'),
+				'validation_failed',
+				422,
+			);
 		}
 
 		if(mb_strlen($slug) > 100) {
-			throw new RuntimeException(__('Slug категории слишком длинный'));
+			JsonResponse::abort(
+				__('Ошибка'),
+				__('Slug категории слишком длинный'),
+				'validation_failed',
+				422,
+			);
 		}
 
 		if(!preg_match('/^[a-z0-9]+(?:-[a-z0-9]+)*$/', $slug)) {
-			throw new RuntimeException(__('Slug: только латиница, цифры и дефис'));
+			JsonResponse::abort(
+				__('Ошибка'),
+				__('Slug: только латиница, цифры и дефис'),
+				'validation_failed',
+				422,
+			);
 		}
 
 		return $slug;
@@ -113,7 +138,12 @@ final class CollectionTypeService {
 		}
 
 		if($this->repo()->findOneById($typeId) === null) {
-			throw new RuntimeException(__('Категория сборки не найдена'));
+			JsonResponse::abort(
+				__('Ошибка'),
+				__('Категория сборки не найдена'),
+				'not_found',
+				404,
+			);
 		}
 
 		return $typeId;
@@ -173,7 +203,12 @@ final class CollectionTypeService {
 		$name = $this->validateName($name);
 
 		if($this->repo()->findOneByName($name) !== null) {
-			throw new RuntimeException(__('Категория сборки с таким именем уже есть'));
+			JsonResponse::abort(
+				__('Ошибка'),
+				__('Категория сборки с таким именем уже есть'),
+				'duplicate',
+				409,
+			);
 		}
 
 		$slugCandidate = $slug !== null && trim($slug) !== ''
@@ -198,7 +233,12 @@ final class CollectionTypeService {
 		$other = $this->repo()->findOneByName($name);
 
 		if($other !== null && $other->id() !== $type->id()) {
-			throw new RuntimeException(__('Категория сборки с таким именем уже есть'));
+			JsonResponse::abort(
+				__('Ошибка'),
+				__('Категория сборки с таким именем уже есть'),
+				'duplicate',
+				409,
+			);
 		}
 
 		$type->name = $name;

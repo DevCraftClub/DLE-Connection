@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace DevCraft\Modules\Connections\Services;
 
+use DevCraft\Core\Http\JsonResponse;
 use DevCraft\Modules\Connections\Models\ConnectionItem;
-use RuntimeException;
 
 /**
  * Доменная логика элементов сборок.
@@ -23,17 +23,32 @@ final class ItemService {
 		bool $isVisible = true,
 	): ConnectionItem {
 		if($collectionId <= 0 || $newsId <= 0) {
-			throw new RuntimeException(__('Некорректные параметры элемента'));
+			JsonResponse::abort(
+				__('Ошибка'),
+				__('Некорректные параметры элемента'),
+				'validation_failed',
+				422,
+			);
 		}
 
 		$collection = $this->collections->collectionsRepo()->findOneById($collectionId);
 
 		if($collection === null) {
-			throw new RuntimeException(__('Сборка не найдена'));
+			JsonResponse::abort(
+				__('Ошибка'),
+				__('Сборка не найдена'),
+				'not_found',
+				404,
+			);
 		}
 
 		if($this->collections->itemsRepo()->findByCollectionAndNews($collectionId, $newsId) !== null) {
-			throw new RuntimeException(__('Новость уже есть в этой сборке'));
+			JsonResponse::abort(
+				__('Ошибка'),
+				__('Новость уже есть в этой сборке'),
+				'duplicate',
+				409,
+			);
 		}
 
 		$item                 = new ConnectionItem();
@@ -57,7 +72,12 @@ final class ItemService {
 			$newsId = (int) $newsId;
 
 			if($newsId <= 0) {
-				throw new RuntimeException(__('Некорректный идентификатор новости'));
+				JsonResponse::abort(
+					__('Ошибка'),
+					__('Некорректный идентификатор новости'),
+					'validation_failed',
+					422,
+				);
 			}
 
 			if($newsId !== $item->news_id) {
@@ -67,7 +87,12 @@ final class ItemService {
 				);
 
 				if($exists !== null && $exists->id() !== $item->id()) {
-					throw new RuntimeException(__('Новость уже есть в этой сборке'));
+					JsonResponse::abort(
+						__('Ошибка'),
+						__('Новость уже есть в этой сборке'),
+						'duplicate',
+						409,
+					);
 				}
 
 				$item->news_id = $newsId;
@@ -141,7 +166,12 @@ final class ItemService {
 				);
 
 				if($exists !== null && $exists->id() !== $item->id()) {
-					throw new RuntimeException(__('Новость уже есть в целевой сборке'));
+					JsonResponse::abort(
+						__('Ошибка'),
+						__('Новость уже есть в целевой сборке'),
+						'duplicate',
+						409,
+					);
 				}
 
 				$item->collection_id = $collectionId;

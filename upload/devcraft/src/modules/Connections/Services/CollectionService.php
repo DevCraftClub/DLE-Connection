@@ -5,13 +5,13 @@ declare(strict_types=1);
 namespace DevCraft\Modules\Connections\Services;
 
 use DevCraft\Core\Application;
+use DevCraft\Core\Http\JsonResponse;
 use DevCraft\Core\Support\DataManager;
 use DevCraft\Modules\Connections\ConnectionsIdentity;
 use DevCraft\Modules\Connections\Models\ConnectionCollection;
 use DevCraft\Modules\Connections\Models\ConnectionItem;
 use DevCraft\Modules\Connections\Repositories\ConnectionCollectionRepository;
 use DevCraft\Modules\Connections\Repositories\ConnectionItemRepository;
-use RuntimeException;
 
 /**
  * Доменная логика сборок связей.
@@ -45,11 +45,21 @@ final class CollectionService {
 		$title = trim($title);
 
 		if($title === '') {
-			throw new RuntimeException(__('Название сборки не может быть пустым'));
+			JsonResponse::abort(
+				__('Ошибка'),
+				__('Название сборки не может быть пустым'),
+				'validation_failed',
+				422,
+			);
 		}
 
 		if(mb_strlen($title) > 255) {
-			throw new RuntimeException(__('Название сборки слишком длинное'));
+			JsonResponse::abort(
+				__('Ошибка'),
+				__('Название сборки слишком длинное'),
+				'validation_failed',
+				422,
+			);
 		}
 
 		return $title;

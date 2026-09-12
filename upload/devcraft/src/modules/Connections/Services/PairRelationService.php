@@ -5,11 +5,11 @@ declare(strict_types=1);
 namespace DevCraft\Modules\Connections\Services;
 
 use DevCraft\Core\Application;
+use DevCraft\Core\Http\JsonResponse;
 use DevCraft\Modules\Connections\Models\ConnectionPairRelation;
 use DevCraft\Modules\Connections\Models\ConnectionRelationType;
 use DevCraft\Modules\Connections\Repositories\ConnectionPairRelationRepository;
 use DevCraft\Modules\Connections\Repositories\ConnectionRelationTypeRepository;
-use RuntimeException;
 
 /**
  * CRUD направленных пар (контекст → цель) внутри сборки.
@@ -59,11 +59,21 @@ final class PairRelationService {
 		$comment      = trim($comment);
 
 		if($fromNewsId <= 0 || $toNewsId <= 0) {
-			throw new RuntimeException(__('Некорректные id новостей для пары'));
+			JsonResponse::abort(
+				__('Ошибка'),
+				__('Некорректные id новостей для пары'),
+				'validation_failed',
+				422,
+			);
 		}
 
 		if($fromNewsId === $toNewsId) {
-			throw new RuntimeException(__('Нельзя задать тип связи новости самой к себе'));
+			JsonResponse::abort(
+				__('Ошибка'),
+				__('Нельзя задать тип связи новости самой к себе'),
+				'validation_failed',
+				422,
+			);
 		}
 
 		$this->assertMembers($collectionId, $fromNewsId, $toNewsId);
@@ -89,11 +99,21 @@ final class PairRelationService {
 		$items = $this->collections->itemsRepo();
 
 		if($items->findByCollectionAndNews($collectionId, $fromNewsId) === null) {
-			throw new RuntimeException(__('Контекстная новость не входит в сборку'));
+			JsonResponse::abort(
+				__('Ошибка'),
+				__('Контекстная новость не входит в сборку'),
+				'validation_failed',
+				422,
+			);
 		}
 
 		if($items->findByCollectionAndNews($collectionId, $toNewsId) === null) {
-			throw new RuntimeException(__('Целевая новость не входит в сборку'));
+			JsonResponse::abort(
+				__('Ошибка'),
+				__('Целевая новость не входит в сборку'),
+				'validation_failed',
+				422,
+			);
 		}
 	}
 
@@ -106,7 +126,12 @@ final class PairRelationService {
 		$repo = Application::instance()->database()->repository(ConnectionRelationType::class);
 
 		if($repo->findOneByName($relationType) === null) {
-			throw new RuntimeException(__('Тип связи должен быть из каталога'));
+			JsonResponse::abort(
+				__('Ошибка'),
+				__('Тип связи должен быть из каталога'),
+				'validation_failed',
+				422,
+			);
 		}
 	}
 

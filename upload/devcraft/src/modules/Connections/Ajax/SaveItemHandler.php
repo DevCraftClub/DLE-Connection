@@ -6,6 +6,7 @@ namespace DevCraft\Modules\Connections\Ajax;
 
 use DevCraft\Core\Http\AjaxRequest;
 use DevCraft\Core\Http\JsonResponse;
+use DevCraft\Core\Exception\JsonResponseException;
 use DevCraft\Core\Interfaces\AjaxHandlerInterface;
 use DevCraft\Core\Interfaces\ResponseInterface;
 use DevCraft\Modules\Connections\Services\CollectionService;
@@ -26,9 +27,7 @@ final class SaveItemHandler implements AjaxHandlerInterface {
 			$collectionId = (int) ($request->data['collection_id'] ?? 0);
 			$newsId       = (int) ($request->data['news_id'] ?? 0);
 			$relationType = (string) ($request->data['relation_type'] ?? '');
-			$isVisible    = array_key_exists('is_visible', $request->data)
-				? !empty($request->data['is_visible'])
-				: true;
+			$isVisible    = !array_key_exists('is_visible', $request->data) || !empty($request->data['is_visible']);
 
 			if($id > 0) {
 				$item = $collections->itemsRepo()->findOneById($id);
@@ -50,6 +49,8 @@ final class SaveItemHandler implements AjaxHandlerInterface {
 				'news_id'    => $item->news_id,
 				'news_title' => NewsLookupService::titleById($item->news_id),
 			]);
+		} catch(JsonResponseException $e) {
+			return $e->response();
 		} catch(Throwable $e) {
 			return JsonResponse::fail(__('Ошибка'), $e->getMessage(), 'error', 400);
 		}

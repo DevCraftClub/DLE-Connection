@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace DevCraft\Modules\Connections\Services;
 
 use DevCraft\Core\Application;
+use DevCraft\Core\Http\JsonResponse;
 use DevCraft\Modules\Connections\Models\ConnectionRelationType;
 use DevCraft\Modules\Connections\Repositories\ConnectionRelationTypeRepository;
-use RuntimeException;
 
 /**
  * CRUD типов связей.
@@ -25,11 +25,21 @@ final class RelationTypeService {
 		$name = trim($name);
 
 		if($name === '') {
-			throw new RuntimeException(__('Название типа связи не может быть пустым'));
+			JsonResponse::abort(
+				__('Ошибка'),
+				__('Название типа связи не может быть пустым'),
+				'validation_failed',
+				422,
+			);
 		}
 
 		if(mb_strlen($name) > 100) {
-			throw new RuntimeException(__('Название типа связи слишком длинное'));
+			JsonResponse::abort(
+				__('Ошибка'),
+				__('Название типа связи слишком длинное'),
+				'validation_failed',
+				422,
+			);
 		}
 
 		return $name;
@@ -56,7 +66,12 @@ final class RelationTypeService {
 		$name = $this->validateName($name);
 
 		if($this->repo()->findOneByName($name) !== null) {
-			throw new RuntimeException(__('Тип связи с таким именем уже есть'));
+			JsonResponse::abort(
+				__('Ошибка'),
+				__('Тип связи с таким именем уже есть'),
+				'duplicate',
+				409,
+			);
 		}
 
 		$type             = new ConnectionRelationType();
@@ -68,11 +83,16 @@ final class RelationTypeService {
 	}
 
 	public function update(ConnectionRelationType $type, string $name): ConnectionRelationType {
-		$name = $this->validateName($name);
+		$name  = $this->validateName($name);
 		$other = $this->repo()->findOneByName($name);
 
 		if($other !== null && $other->id() !== $type->id()) {
-			throw new RuntimeException(__('Тип связи с таким именем уже есть'));
+			JsonResponse::abort(
+				__('Ошибка'),
+				__('Тип связи с таким именем уже есть'),
+				'duplicate',
+				409,
+			);
 		}
 
 		$type->name = $name;

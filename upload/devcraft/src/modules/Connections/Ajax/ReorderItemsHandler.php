@@ -6,6 +6,7 @@ namespace DevCraft\Modules\Connections\Ajax;
 
 use DevCraft\Core\Http\AjaxRequest;
 use DevCraft\Core\Http\JsonResponse;
+use DevCraft\Core\Exception\JsonResponseException;
 use DevCraft\Core\Interfaces\AjaxHandlerInterface;
 use DevCraft\Core\Interfaces\ResponseInterface;
 use DevCraft\Modules\Connections\Services\ItemService;
@@ -40,6 +41,8 @@ final class ReorderItemsHandler implements AjaxHandlerInterface {
 			(new ItemService())->reorder($normalized);
 
 			return JsonResponse::toast(__('Порядок элементов сохранён'));
+		} catch(JsonResponseException $e) {
+			return $e->response();
 		} catch(Throwable $e) {
 			return JsonResponse::fail(__('Ошибка'), $e->getMessage(), 'error', 400);
 		}

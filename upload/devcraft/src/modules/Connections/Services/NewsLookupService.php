@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace DevCraft\Modules\Connections\Services;
 
+use DcApi;
+use Throwable;
+
 /**
- * Поиск и заголовки новостей DLE (post.id).
+ * Поиск и заголовки новостей DLE через SDK (`DcApi::query('post')`).
  */
 final class NewsLookupService {
 
@@ -17,16 +20,11 @@ final class NewsLookupService {
 			return false;
 		}
 
-		global $db;
-
-		if(!isset($db) || !is_object($db)) {
+		try {
+			$row = DcApi::query('post')->find($newsId);
+		} catch(Throwable) {
 			return false;
 		}
-
-		$newsId = (int) $newsId;
-		$row    = $db->super_query(
-			'SELECT id FROM ' . PREFIX . "_post WHERE id = '{$newsId}' LIMIT 1",
-		);
 
 		return is_array($row) && !empty($row['id']);
 	}
@@ -36,22 +34,23 @@ final class NewsLookupService {
 			return '';
 		}
 
-		global $db;
-
-		if(!isset($db) || !is_object($db)) {
+		try {
+			$row = DcApi::query('post')
+				->select(['id', 'title'])
+				->where('id', (string) $newsId)
+				->limit(1)
+				->fetchAll();
+		} catch(Throwable) {
 			return '#' . $newsId;
 		}
 
-		$newsId = (int) $newsId;
-		$row    = $db->super_query(
-			'SELECT id, title FROM ' . PREFIX . "_post WHERE id = '{$newsId}' LIMIT 1",
-		);
+		$first = $row[0] ?? null;
 
-		if(!is_array($row) || empty($row['id'])) {
+		if(!is_array($first) || empty($first['id'])) {
 			return '#' . $newsId;
 		}
 
-		$title = trim((string) ($row['title'] ?? ''));
+		$title = trim((string) ($first['title'] ?? ''));
 
 		return $title !== '' ? $title : '#' . $newsId;
 	}
@@ -60,41 +59,66 @@ final class NewsLookupService {
 	 * @return list<array{id:int, title:string}>
 	 */
 	public static function search(string $query, int $limit = 20): array {
-		global $db;
-
 		$query = trim($query);
 		$limit = max(1, min(50, $limit));
 
-		if($query === '' || !isset($db) || !is_object($db)) {
+		if($query === '') {
 			return [];
 		}
 
-		$escaped = $db->safesql($query);
-		$like    = $db->safesql('%' . $query . '%');
-		$sql     = 'SELECT id, title FROM ' . PREFIX . '_post WHERE ';
+		$byId = [];
 
-		if(ctype_digit($query)) {
-			$id  = (int) $query;
-			$sql .= "id = '{$id}' OR title LIKE '{$like}'";
-		} else {
-			$sql .= "title LIKE '{$like}'";
+		try {
+			if(ctype_digit($query)) {
+				$row = DcApi::query('post')
+					->select(['id', 'title'])
+					->where('id', $query)
+					->limit(1)
+					->fetchAll();
+				$first = $row[0] ?? null;
+
+				if(is_array($first) && !empty($first['id'])) {
+					$byId[(int) $first['id']] = [
+						'id'    => (int) $first['id'],
+						'title' => (string) ($first['title'] ?? ''),
+					];
+				}
+			}
+
+			/* Префикс % → LIKE (см. TableQuery::where). */
+			$likeRows = DcApi::query('post')
+				->select(['id', 'title'])
+				->where('title', '%' . $query)
+				->orderBy('id', 'DESC')
+				->limit($limit)
+				->fetchAll();
+		} catch(Throwable) {
+			return array_values($byId);
 		}
 
-		$sql .= " ORDER BY id DESC LIMIT {$limit}";
-		$db->query($sql);
+		$map = $byId;
 
-		$rows = [];
+		foreach($likeRows as $row) {
+			if(!is_array($row)) {
+				continue;
+			}
 
-		while($row = $db->get_row()) {
-			$rows[] = [
-				'id'    => (int) $row['id'],
-				'title' => (string) $row['title'],
+			$id = (int) ($row['id'] ?? 0);
+
+			if($id <= 0 || isset($map[$id])) {
+				continue;
+			}
+
+			$map[$id] = [
+				'id'    => $id,
+				'title' => (string) ($row['title'] ?? ''),
 			];
 		}
 
-		$db->free();
+		$rows = array_values($map);
+		usort($rows, static fn(array $a, array $b): int => $b['id'] <=> $a['id']);
 
-		return $rows;
+		return array_slice($rows, 0, $limit);
 	}
 
 	/**
@@ -103,33 +127,34 @@ final class NewsLookupService {
 	 * @return array<int, array{id:int, title:string, alt_name:string, category:string, date:string}>
 	 */
 	public static function postsByIds(array $ids): array {
-		global $db;
-
 		$ids = array_values(array_unique(array_filter(array_map('intval', $ids))));
 
-		if($ids === [] || !isset($db) || !is_object($db)) {
+		if($ids === []) {
 			return [];
 		}
 
-		$in = implode(',', $ids);
-		$db->query(
-			'SELECT id, title, alt_name, category, date FROM ' . PREFIX . "_post WHERE id IN ({$in})",
-		);
-
 		$map = [];
 
-		while($row = $db->get_row()) {
-			$id       = (int) $row['id'];
-			$map[$id] = [
-				'id'       => $id,
-				'title'    => (string) $row['title'],
-				'alt_name' => (string) ($row['alt_name'] ?? ''),
-				'category' => (string) ($row['category'] ?? ''),
-				'date'     => (string) ($row['date'] ?? ''),
-			];
-		}
+		try {
+			/* TableQuery без whereIn: по одному find (кеш dle_api_query). */
+			foreach($ids as $id) {
+				$row = DcApi::query('post')->find($id);
 
-		$db->free();
+				if(!is_array($row) || empty($row['id'])) {
+					continue;
+				}
+
+				$map[$id] = [
+					'id'       => $id,
+					'title'    => (string) ($row['title'] ?? ''),
+					'alt_name' => (string) ($row['alt_name'] ?? ''),
+					'category' => (string) ($row['category'] ?? ''),
+					'date'     => (string) ($row['date'] ?? ''),
+				];
+			}
+		} catch(Throwable) {
+			return $map;
+		}
 
 		return $map;
 	}

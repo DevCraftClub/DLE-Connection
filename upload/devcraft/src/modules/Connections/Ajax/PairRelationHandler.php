@@ -6,6 +6,7 @@ namespace DevCraft\Modules\Connections\Ajax;
 
 use DevCraft\Core\Http\AjaxRequest;
 use DevCraft\Core\Http\JsonResponse;
+use DevCraft\Core\Exception\JsonResponseException;
 use DevCraft\Core\Interfaces\AjaxHandlerInterface;
 use DevCraft\Core\Interfaces\ResponseInterface;
 use DevCraft\Modules\Connections\Services\PairRelationService;
@@ -26,6 +27,8 @@ final class PairRelationHandler implements AjaxHandlerInterface {
 				'upsert' => $this->upsert($service, $request),
 				default => JsonResponse::fail(__('Ошибка'), __('Неизвестное действие'), 'error', 400),
 			};
+		} catch(JsonResponseException $e) {
+			return $e->response();
 		} catch(Throwable $e) {
 			return JsonResponse::fail(__('Ошибка'), $e->getMessage(), 'error', 400);
 		}
