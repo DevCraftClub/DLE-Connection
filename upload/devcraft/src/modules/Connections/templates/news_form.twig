@@ -1,0 +1,22 @@
+{# Виджет связей в форме addnews/editnews админки DLE #}
+<div class="dc-conn-news-form panel panel-flat"
+	 id="dc-conn-news-form"
+	 data-news-id="{{ news_id|default(0) }}"
+	 data-assets-base="{{ assets_base }}"
+	 data-dc-conn-embed="1">
+	<div class="panel-heading">
+		<h6 class="panel-title">{{ 'Связи новостей'|trans }}</h6>
+	</div>
+	<div class="panel-body">
+		{% if news_id|default(0) <= 0 %}
+			<p class="text-muted">{{ 'Сначала сохраните новость, затем можно управлять связями.'|trans }}</p>
+		{% else %}
+			<p class="text-muted text-small">{{ 'Управление сборками, где участвует эта новость. Полное дерево — в модуле Connections.'|trans }}</p>
+			<div data-dc-conn-news-tree></div>
+			<button type="button" class="button primary mt-2" data-dc-conn-news-add>
+				<img src="{{ assets_base }}/add-item.svg" alt="" width="16" height="16" class="mr-1">
+				{{ 'Добавить в сборку'|trans }}
+			</button>
+		{% endif %}
+	</div>
+</div>

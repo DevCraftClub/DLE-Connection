@@ -1,0 +1,28 @@
+{% include 'pages/settings.twig' %}
+
+<div class="mt-4" id="dc-conn-relation-types" data-dc-conn-settings="1">
+	<h5 class="mb-2">{{ 'Типы связей'|trans }}</h5>
+	<p class="text-muted text-small">{{ 'Типы используются при добавлении новости в сборку. Сиды не создаются — добавьте нужные вручную.'|trans }}</p>
+	<div class="d-flex flex-align-center flex-justify-between mb-2">
+		<button type="button" class="button primary" data-dc-conn-rtype-add>
+			<span class="mif-plus"></span> {{ 'Добавить тип'|trans }}
+		</button>
+	</div>
+	<ul class="dc-conn-rtype-list list-group" data-dc-conn-rtype-list>
+		{% for type in relation_types %}
+			<li class="list-group-item d-flex flex-align-center flex-justify-between" data-id="{{ type.id }}" draggable="true">
+				<span class="dc-conn-rtype-name">{{ type.name }}</span>
+				<span class="dc-conn-actions">
+					<button type="button" class="button cycle outline" data-dc-conn-rtype-rename title="{{ 'Переименовать'|trans }}">
+						<img src="{{ assets_base }}/rename.svg" alt="" width="16" height="16">
+					</button>
+					<button type="button" class="button cycle outline alert" data-dc-conn-rtype-delete title="{{ 'Удалить'|trans }}">
+						<img src="{{ assets_base }}/delete.svg" alt="" width="16" height="16">
+					</button>
+				</span>
+			</li>
+		{% else %}
+			<li class="list-group-item text-muted" data-dc-conn-rtype-empty>{{ 'Типов пока нет'|trans }}</li>
+		{% endfor %}
+	</ul>
+</div>

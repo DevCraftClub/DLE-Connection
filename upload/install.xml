@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<dleplugin>
+	<name>Connections</name>
+	<description>Взаимосвязь между новостями</description>
+	<icon>devcraft/src/modules/Connections/Public/icon.png</icon>
+	<version>210.1.0</version>
+	<dleversion>21.0</dleversion>
+	<versioncompare>greater</versioncompare>
+	<upgradeurl></upgradeurl>
+	<filedelete>1</filedelete>
+	<needplugin>DevCraft Admin</needplugin>
+	<mnotice>1</mnotice>
+	<mysqlinstall><![CDATA[]]></mysqlinstall>
+	<mysqlupgrade><![CDATA[INSERT INTO {prefix}_admin_sections (name, title, descr, icon, allow_groups) VALUES ('connections', 'Connections v210.1.0', 'Взаимосвязь между новостями', 'devcraft/src/modules/Connections/Public/icon.png', '1') ON DUPLICATE KEY UPDATE title='Connections v210.1.0', descr='Взаимосвязь между новостями', icon='devcraft/src/modules/Connections/Public/icon.png', allow_groups='1';]]></mysqlupgrade>
+	<mysqlenable><![CDATA[INSERT INTO {prefix}_admin_sections (name, title, descr, icon, allow_groups) VALUES ('connections', 'Connections v210.1.0', 'Взаимосвязь между новостями', 'devcraft/src/modules/Connections/Public/icon.png', '1') ON DUPLICATE KEY UPDATE title='Connections v210.1.0', descr='Взаимосвязь между новостями', icon='devcraft/src/modules/Connections/Public/icon.png', allow_groups='1';]]></mysqlenable>
+	<mysqldisable><![CDATA[DELETE FROM {prefix}_admin_sections WHERE name='connections';]]></mysqldisable>
+	<mysqldelete><![CDATA[DELETE FROM {prefix}_admin_sections WHERE name='connections';]]></mysqldelete>
+	<phpinstall><![CDATA[]]></phpinstall>
+	<phpupgrade><![CDATA[]]></phpupgrade>
+	<phpenable><![CDATA[]]></phpenable>
+	<phpdisable><![CDATA[]]></phpdisable>
+	<phpdelete><![CDATA[]]></phpdelete>
+	<notice><![CDATA[<ul><li>Документация: <a href="https://readme.devcraft.club/dev/dle/connections/210.1.0/getting_started" target="_blank">readme</a></li><li>Include: <code>{include file="devcraft/src/modules/Connections/Controller/show_connections.php?news_id={news-id}"}</code></li></ul>]]></notice>
+	<file name="engine/inc/addnews.php">
+		<operation action="before">
+			<searchcode><![CDATA[echo <<<HTML
+<div class="panel panel-default">
+		
+		    <div class="panel-heading">]]></searchcode>
+			<replacecode><![CDATA[// DevCraft Connections: start
+$dc_connections_tab = '<li><a href="#tabconnections" data-toggle="tab"><i class="fa fa-link position-left"></i> Связи</a></li>';
+$dc_connections_body_html = '';
+try {
+	if (!defined('DEVCRAFT_BOOTSTRAPPED')) {
+		require_once DLEPlugins::Check(ROOT_DIR . '/devcraft/init.php');
+	}
+	if (defined('DEVCRAFT_BOOTSTRAPPED')) {
+		$dc_connections_body_html = (new DevCraft\Modules\Connections\Controller\NewsFormController())->render(0);
+	}
+} catch (Throwable $e) {
+	$dc_connections_body_html = '';
+}
+$dc_connections_tab_body = '<div class="tab-pane" id="tabconnections"><div class="panel-body">' . $dc_connections_body_html . '</div></div>';
+// DevCraft Connections: end
+
+]]></replacecode>
+			<searchcount>1</searchcount>
+			<replacecount>1</replacecount>
+			<enabled>1</enabled>
+		</operation>
+		<operation action="after">
+			<searchcode><![CDATA[<li id="tab-perimit"><a href="#tabperm" data-toggle="tab"><i class="fa fa-lock position-left"></i> {$lang['tabs_perm']}</a></li>]]></searchcode>
+			<replacecode><![CDATA[{$dc_connections_tab}]]></replacecode>
+			<searchcount>1</searchcount>
+			<replacecount>1</replacecount>
+			<enabled>1</enabled>
+		</operation>
+		<operation action="after">
+			<searchcode><![CDATA[{$xf_tabs_body}]]></searchcode>
+			<replacecode><![CDATA[{$dc_connections_tab_body}]]></replacecode>
+			<searchcount>1</searchcount>
+			<replacecount>1</replacecount>
+			<enabled>1</enabled>
+		</operation>
+	</file>
+	<file name="engine/inc/editnews.php">
+		<operation action="before">
+			<searchcode><![CDATA[echo <<<HTML
+<div class="panel panel-default">
+
+		    <div class="panel-heading">
+				<ul class="nav nav-tabs nav-tabs-solid">
+					<li class="active"><a href="#tabhome" data-toggle="tab"><i class="fa fa-home position-left"></i> {$lang['tabs_news']}</a></li>]]></searchcode>
+			<replacecode><![CDATA[	// DevCraft Connections: start
+	$dc_connections_tab = '<li><a href="#tabconnections" data-toggle="tab"><i class="fa fa-link position-left"></i> Связи</a></li>';
+	$dc_connections_body_html = '';
+	try {
+		if (!defined('DEVCRAFT_BOOTSTRAPPED')) {
+			require_once DLEPlugins::Check(ROOT_DIR . '/devcraft/init.php');
+		}
+		if (defined('DEVCRAFT_BOOTSTRAPPED')) {
+			$dc_connections_body_html = (new DevCraft\Modules\Connections\Controller\NewsFormController())->render((int)$row['id']);
+		}
+	} catch (Throwable $e) {
+		$dc_connections_body_html = '';
+	}
+	$dc_connections_tab_body = '<div class="tab-pane" id="tabconnections"><div class="panel-body">' . $dc_connections_body_html . '</div></div>';
+	// DevCraft Connections: end
+
+]]></replacecode>
+			<searchcount>1</searchcount>
+			<replacecount>1</replacecount>
+			<enabled>1</enabled>
+		</operation>
+		<operation action="after">
+			<searchcode><![CDATA[<li id="tab-perimit"><a href="#tabperm" data-toggle="tab"><i class="fa fa-lock position-left"></i> {$lang['tabs_perm']}</a></li>]]></searchcode>
+			<replacecode><![CDATA[{$dc_connections_tab}]]></replacecode>
+			<searchcount>1</searchcount>
+			<replacecount>1</replacecount>
+			<enabled>1</enabled>
+		</operation>
+		<operation action="after">
+			<searchcode><![CDATA[{$xf_tabs_body}]]></searchcode>
+			<replacecode><![CDATA[{$dc_connections_tab_body}]]></replacecode>
+			<searchcount>1</searchcount>
+			<replacecount>1</replacecount>
+			<enabled>1</enabled>
+		</operation>
+	</file>
+	<file name="engine/modules/addnews.php">
+		<operation action="after">
+			<searchcode><![CDATA[		$tpl->set( '{header-title}', $lang['title_addnews']);]]></searchcode>
+			<replacecode><![CDATA[		// DevCraft Connections: start
+		try {
+			if (!defined('DEVCRAFT_BOOTSTRAPPED')) {
+				require_once DLEPlugins::Check(ROOT_DIR . '/devcraft/init.php');
+			}
+			if (defined('DEVCRAFT_BOOTSTRAPPED')) {
+				$tpl->set('{dc-connections}', (new DevCraft\Modules\Connections\Controller\AddNewsController())->render());
+			} else {
+				$tpl->set('{dc-connections}', '');
+			}
+		} catch (Throwable $e) {
+			$tpl->set('{dc-connections}', '');
+		}
+		// DevCraft Connections: end]]></replacecode>
+			<searchcount>1</searchcount>
+			<replacecount>1</replacecount>
+			<enabled>1</enabled>
+		</operation>
+	</file>
+</dleplugin>
