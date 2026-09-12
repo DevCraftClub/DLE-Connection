@@ -1,0 +1,88 @@
+name: Ошибка
+description: Баг, падение, «не работает как надо»
+title: "[Ошибка]: "
+labels:
+    - Ошибка
+    - bug
+assignees:
+    - MaximHarder
+body:
+    -   type: markdown
+        attributes:
+            value: |
+                Спасибо, что оформили обращение — ниже только то, что нужно, чтобы разобраться быстрее.
+    -   type: checkboxes
+        id: read-rules
+        attributes:
+            label: Пользовательское соглашение
+            description: Срочный фикс «прямо сейчас» — сначала [прочитай соглашение](https://devcraft.club/pages/licence-agreement/). Без этого дальше не пойдём.
+            options:
+                -   label: Прочитал(а) соглашение и согласен(на) с ним
+                    required: true
+    -   type: textarea
+        id: what-happened
+        attributes:
+            label: Что сломалось?
+            description: Шаги: что сделал → что увидел. Чем конкретнее — тем быстрее ответ.
+            placeholder: 1. Открыл … 2. Нажал … 3. Увидел …
+            value: Опиши шаги здесь
+        validations:
+            required: true
+    -   type: textarea
+        id: what-should-happen
+        attributes:
+            label: Что должно было быть?
+            description: Ожидаемое поведение после установки/включения плагина.
+            placeholder: Например: кнопка сохраняет настройки без ошибки
+        validations:
+            required: false
+    -   type: input
+        id: plugin-version
+        attributes:
+            label: Версия плагина
+            description: Как в менеджере плагинов DLE.
+        validations:
+            required: true
+    -   type: dropdown
+        id: dle-version
+        attributes:
+            label: Версия DLE
+            description: Какая версия DLE стоит на сайте?
+            options:
+                - "20.0 (Default)"
+                - "19.1"
+                - "19.0"
+                - "18.1"
+                - "18.0"
+                - "17.x"
+                - "16.x"
+                - "15.x"
+                - "14.x"
+                - "13.x"
+                - "< 13.x"
+        validations:
+            required: true
+    -   type: dropdown
+        id: php-version
+        attributes:
+            label: Версия PHP
+            description: Какая версия PHP крутится на сервере?
+            options:
+                - "8.3 (Default)"
+                - "8.5"
+                - "8.4"
+                - "8.2"
+                - "8.1"
+                - "7.x"
+                - "5.x"
+        validations:
+            required: true
+    -   type: textarea
+        id: screenshots
+        attributes:
+            label: Скриншоты
+            description: Если есть — приложи. Текст ошибки на скрине тоже ок.
+            value: |
+                ![DESCRIPTION](LINK.png)
+        validations:
+            required: false

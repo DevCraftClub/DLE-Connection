@@ -1,0 +1,50 @@
+version: 2
+# Порядок merge: .github/workflows/dependabot-queue.yml (по одному PR, включая major).
+# CI-gate: .github/workflows/dependabot-ci-automerge.yml при изменениях package.json / workflows.
+# Без ignore для major — major открываются и мержатся как minor, если checks зелёные.
+# Опционально: секрет QUEUE_GITHUB_TOKEN (PAT), если CODEOWNERS/rulesets блокируют merge.
+# «Allow auto-merge» полезно; очередь всё равно мержит через gh.
+# Reviewers/Assignees: подставь владельца репозитория (шаблон: MaximHarder / org DevCraftClub).
+updates:
+  # npm-зависимости (имеет смысл, только если в directory есть package.json)
+  - package-ecosystem: 'npm'
+    directory: '/'
+    schedule:
+      interval: 'monthly'
+      day: 'monday'
+      time: '09:00'
+      timezone: 'Europe/Berlin'
+    open-pull-requests-limit: 5
+    reviewers:
+      - 'MaximHarder'
+    assignees:
+      - 'MaximHarder'
+    commit-message:
+      prefix: 'chore'
+      prefix-development: 'chore'
+      include: 'scope'
+    labels:
+      - 'dependencies'
+      - 'security'
+      - 'automated'
+
+  # GitHub Actions
+  - package-ecosystem: 'github-actions'
+    directory: '/'
+    schedule:
+      interval: 'semiannually'
+      day: 'monday'
+      time: '09:00'
+      timezone: 'Europe/Berlin'
+    open-pull-requests-limit: 3
+    reviewers:
+      - 'MaximHarder'
+    assignees:
+      - 'MaximHarder'
+    commit-message:
+      prefix: 'ci'
+      include: 'scope'
+    labels:
+      - 'dependencies'
+      - 'github-actions'
+      - 'automated'

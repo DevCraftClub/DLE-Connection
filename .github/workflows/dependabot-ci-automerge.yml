@@ -1,0 +1,73 @@
+name: CI и Dependabot Automerge
+
+# Минимальный status-gate для Dependabot-PR.
+# Есть package.json: npm install + существующие scripts (lint/test/build).
+# Нет package.json: checkout-gate (PR по workflows/Actions) — шаги ниже подправь под стек.
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+    paths:
+      - 'package.json'
+      - 'package-lock.json'
+      - 'npm-shrinkwrap.json'
+      - '.github/workflows/**'
+  push:
+    branches: [main, master]
+    paths:
+      - 'package.json'
+      - 'package-lock.json'
+      - 'npm-shrinkwrap.json'
+      - '.github/workflows/**'
+
+# Своя concurrency — НЕ делить dependabot-updates-gate / dependabot-merge-queue
+# (иначе deadlock, когда Deploy/FTP ждёт эти checks и очередь).
+concurrency:
+  group: dependabot-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  ci:
+    name: Установка и проверки
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup Node.js
+        if: hashFiles('package.json') != ''
+        uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+
+      - name: Установка зависимостей
+        if: hashFiles('package.json') != ''
+        # Нет lockfile в репозитории? npm install. Иначе предпочтительнее npm ci.
+        run: |
+          if [ -f package-lock.json ] || [ -f npm-shrinkwrap.json ]; then
+            npm ci || npm install || npm install --legacy-peer-deps
+          else
+            npm install || npm install --legacy-peer-deps
+          fi
+
+      - name: Lint / test / build (если есть scripts)
+        if: hashFiles('package.json') != ''
+        run: |
+          set -euo pipefail
+          has_script() { node -e "const p=require('./package.json'); process.exit(p.scripts&&p.scripts['$1']?0:1)"; }
+          if has_script lint; then npm run lint; fi
+          if has_script typecheck; then npm run typecheck; fi
+          if has_script test; then CI=true npm test -- --watchAll=false || npm test; fi
+          if has_script build; then npm run build; fi
+          if has_script 'build:client'; then npm run build:client; fi
+          echo "Шаги CI готовы (отсутствующие scripts пропущены)."
+
+      - name: Минимальный gate (нет package.json)
+        if: hashFiles('package.json') == ''
+        run: |
+          echo "Нет package.json — checkout-gate OK."
+          echo "Для npm: добавь package.json и используй шаги выше,"
+          echo "или подстрой этот workflow под стек (PHP/Composer, …)."

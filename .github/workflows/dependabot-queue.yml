@@ -1,0 +1,97 @@
+name: Очередь merge Dependabot
+
+# Открытые Dependabot-PR обрабатываются строго по порядку (сначала меньший номер).
+# Major тоже: при зелёных checks и без конфликтов → squash-merge, затем следующий PR.
+on:
+  workflow_run:
+    workflows: ['CI и Dependabot Automerge']
+    types: [completed]
+  pull_request:
+    types: [closed]
+  push:
+    branches: [main, master]
+  schedule:
+    - cron: '*/15 * * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: dependabot-merge-queue
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  pull-requests: write
+  checks: read
+  statuses: read
+  actions: read
+
+jobs:
+  process-queue:
+    name: Обработать очередь Dependabot
+    runs-on: ubuntu-latest
+    if: >
+      github.event_name != 'pull_request' ||
+      github.event.pull_request.merged == true
+    steps:
+      - name: Мержить PR по порядку
+        env:
+          # Опционально: PAT с обходом CODEOWNERS / rulesets
+          QUEUE_TOKEN: ${{ secrets.QUEUE_GITHUB_TOKEN }}
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          if [ -n "${QUEUE_TOKEN:-}" ]; then
+            export GH_TOKEN="$QUEUE_TOKEN"
+          fi
+
+          mapfile -t PRS < <(gh pr list --repo "$REPO" --state open --limit 50 --author "app/dependabot" \
+            --json number --jq 'sort_by(.number) | .[].number')
+
+          if [ "${#PRS[@]}" -eq 0 ]; then
+            echo "Нет открытых Dependabot-PR — готово."
+            exit 0
+          fi
+
+          echo "Очередь: ${PRS[*]}"
+
+          for PR in "${PRS[@]}"; do
+            echo ""
+            echo "=== PR #${PR} ==="
+
+            if ! gh pr update-branch "$PR" --repo "$REPO"; then
+              echo "update-branch не удался — проверяю конфликты..."
+            fi
+
+            sleep 10
+
+            MERGEABLE=$(gh pr view "$PR" --repo "$REPO" --json mergeable --jq .mergeable)
+            STATE=$(gh pr view "$PR" --repo "$REPO" --json mergeStateStatus --jq .mergeStateStatus)
+            echo "mergeable=${MERGEABLE} mergeStateStatus=${STATE}"
+
+            if [ "$MERGEABLE" = "CONFLICTING" ] || [ "$STATE" = "DIRTY" ]; then
+              echo "PR #${PR} с конфликтами — очередь останавливается."
+              exit 0
+            fi
+
+            # Дождаться checks после update-branch
+            echo "Жду status checks..."
+            if ! gh pr checks "$PR" --repo "$REPO" --watch --interval 30 --fail-fast; then
+              STATE=$(gh pr view "$PR" --repo "$REPO" --json mergeStateStatus --jq .mergeStateStatus)
+              if [ "$STATE" != "CLEAN" ] && [ "$STATE" != "HAS_HOOKS" ]; then
+                echo "PR #${PR} нельзя смержить (status=${STATE}) — очередь останавливается."
+                exit 0
+              fi
+            fi
+
+            echo "Merge PR #${PR} (squash, включая major)..."
+            if ! gh pr merge "$PR" --repo "$REPO" --squash --delete-branch; then
+              echo "Merge PR #${PR} не удался. Задай секрет QUEUE_GITHUB_TOKEN при необходимости."
+              exit 1
+            fi
+            echo "PR #${PR} смержен — следующий в очереди."
+            # Дать GitHub обновить base для следующего PR
+            sleep 5
+          done
+
+          echo "Очередь пуста / всё обработано."

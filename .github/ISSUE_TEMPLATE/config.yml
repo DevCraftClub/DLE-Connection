@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Пользовательское соглашение
+    url: https://devcraft.club/pages/licence-agreement/
+    about: Прочитай до создания issue — там условия поддержки и срочных правок
+  - name: Система обращений DevCraft
+    url: https://devcraft.club/tickets/queue?status_not%5B0%5D=-1
+    about: Очередь обращений на сайте разработчика — если удобнее не через GitHub

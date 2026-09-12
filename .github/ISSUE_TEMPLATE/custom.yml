@@ -1,0 +1,72 @@
+name: Другое
+description: Не баг и не фича — всё остальное сюда
+title: "[Прочее]: "
+labels:
+    - Прочее
+    - Не знаю куда
+assignees:
+    - MaximHarder
+body:
+    -   type: markdown
+        attributes:
+            value: |
+                Спасибо, что оформили обращение — ниже только то, что нужно, чтобы разобраться быстрее.
+    -   type: checkboxes
+        id: read-rules
+        attributes:
+            label: Пользовательское соглашение
+            description: Срочный фикс «прямо сейчас» — сначала [прочитай соглашение](https://devcraft.club/pages/licence-agreement/). Без этого дальше не пойдём.
+            options:
+                -   label: Прочитал(а) соглашение и согласен(на) с ним
+                    required: true
+    -   type: textarea
+        id: what-do-you-need
+        attributes:
+            label: Суть
+            description: Коротко: что хочешь и зачем. Детали и шаги — плюс.
+            placeholder: Мне нужно …
+        validations:
+            required: true
+    -   type: dropdown
+        id: dle-version
+        attributes:
+            label: Версия DLE
+            description: Какая версия DLE стоит на сайте?
+            options:
+                - "20.0 (Default)"
+                - "19.1"
+                - "19.0"
+                - "18.1"
+                - "18.0"
+                - "17.x"
+                - "16.x"
+                - "15.x"
+                - "14.x"
+                - "13.x"
+                - "< 13.x"
+        validations:
+            required: true
+    -   type: dropdown
+        id: php-version
+        attributes:
+            label: Версия PHP
+            description: Какая версия PHP крутится на сервере?
+            options:
+                - "8.3 (Default)"
+                - "8.5"
+                - "8.4"
+                - "8.2"
+                - "8.1"
+                - "7.x"
+                - "5.x"
+        validations:
+            required: true
+    -   type: textarea
+        id: screenshots
+        attributes:
+            label: Скриншоты / макеты
+            description: Как ты это видишь — скрин, набросок, ссылка.
+            value: |
+                ![DESCRIPTION](LINK.png)
+        validations:
+            required: false
