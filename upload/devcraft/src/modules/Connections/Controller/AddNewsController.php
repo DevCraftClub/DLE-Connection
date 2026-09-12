@@ -22,11 +22,11 @@ final class AddNewsController {
 			$tpl = new \dle_template();
 		}
 
-		$skin = (string) ($config['skin'] ?? 'Default');
+		$skin = (string) ($config['skin'] ?? 'Air');
 		$base = 'devcraft/connections/';
 
 		if(!is_file(ROOT_DIR . '/templates/' . $skin . '/' . $base . 'addnews.tpl')) {
-			$skin = 'Default';
+			$skin = is_file(ROOT_DIR . '/templates/Air/' . $base . 'addnews.tpl') ? 'Air' : 'Default';
 		}
 
 		$tpl->result['dc_conn_addnews'] = '';
@@ -34,7 +34,7 @@ final class AddNewsController {
 		$tpl->set('{module-url}', '?do=static&page=connections');
 		$tpl->compile('dc_conn_addnews');
 
-		return (string) ($tpl->result['dc_conn_addnews'] ?? '');
+		return $tpl->result['dc_conn_addnews'] ?? '';
 	}
 
 }
