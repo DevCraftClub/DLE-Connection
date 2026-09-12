@@ -1,7 +1,7 @@
 /**
  * Вкладка «Связи» на DLE addnews/editnews.
  * Стек: jQuery 3 + jqueryui.js (DLEPush) + application.js (DLEprompt/DLEconfirm/DLEalert).
- * Черновик в hidden dc_connections_snapshot; без Metro / dc_public / mutating AJAX.
+ * Черновик в hidden dc_connections_snapshot.
  */
 (function (window, document, $) {
 	'use strict';
@@ -355,6 +355,10 @@
 		if (!Array.isArray(this.types) || !this.types.length) {
 			this.types = parseJsonAttr(root, 'data-dc-conn-types', []);
 		}
+		this.collectionTypes = parseJsonAttr(root, 'data-dc-conn-collection-types', []);
+		if (!Array.isArray(this.collectionTypes)) {
+			this.collectionTypes = [];
+		}
 		this.snapshot = parseJsonAttr(root, 'data-dc-conn-snapshot', null);
 		if (!this.snapshot || typeof this.snapshot !== 'object') {
 			this.snapshot = { version: 1, memberships: [], new_collections: [] };
@@ -368,7 +372,15 @@
 		this.snapshot.version = 1;
 		var selfInit = this;
 		this.snapshot.memberships.forEach(function (m) {
+			if (m.type_id === undefined || m.type_id === null) {
+				m.type_id = selfInit.resolveTypeId(m);
+			} else {
+				m.type_id = parseInt(m.type_id, 10) || 0;
+			}
 			selfInit.ensureMembershipItems(m);
+		});
+		this.snapshot.new_collections.forEach(function (nc) {
+			nc.type_id = parseInt(nc.type_id, 10) || 0;
 		});
 		this.sortables = [];
 		this.bind();
@@ -425,6 +437,9 @@
 			if (action === 'rename') {
 				self.renameCollection(key);
 			}
+			if (action === 'set-collection-type') {
+				self.setCollectionType(key);
+			}
 		});
 	};
 
@@ -447,6 +462,76 @@
 			return c.id === id;
 		});
 		return col ? col.title : ('#' + id);
+	};
+
+	NewsFormDraft.prototype.resolveTypeId = function (membership) {
+		if (membership && membership.type_id !== undefined && membership.type_id !== null && membership.type_id !== '') {
+			return parseInt(membership.type_id, 10) || 0;
+		}
+		if (membership && membership.temp_key) {
+			var nc = this.snapshot.new_collections.find(function (c) {
+				return c.temp_key === membership.temp_key;
+			});
+			return nc ? (parseInt(nc.type_id, 10) || 0) : 0;
+		}
+		var colId = membership ? membership.collection_id : 0;
+		var col = this.treesById[colId] || this.treesById[String(colId)];
+		return col ? (parseInt(col.type_id, 10) || 0) : 0;
+	};
+
+	NewsFormDraft.prototype.collectionTypeLabel = function (typeId) {
+		var id = parseInt(typeId, 10) || 0;
+		if (id <= 0) {
+			return t('Без категории');
+		}
+		var found = (this.collectionTypes || []).find(function (row) {
+			return parseInt(row.id, 10) === id;
+		});
+		return found && found.name ? found.name : ('#' + id);
+	};
+
+	NewsFormDraft.prototype.pickCollectionType = function (currentId) {
+		var selected = parseInt(currentId || 0, 10) || 0;
+		var options = [{ value: '0', label: t('— без категории —') }].concat(
+			(this.collectionTypes || []).map(function (type) {
+				return { value: String(type.id), label: type.name };
+			})
+		);
+		return selectDialog(t('Категория сборки'), t('Категория'), options, String(selected)).then(function (val) {
+			if (val === null) {
+				return null;
+			}
+			return parseInt(val, 10) || 0;
+		});
+	};
+
+	NewsFormDraft.prototype.setCollectionType = function (key) {
+		var self = this;
+		var m = this.findMembership(key);
+		if (!m) {
+			return;
+		}
+		this.pickCollectionType(this.resolveTypeId(m)).then(function (typeId) {
+			if (typeId === null) {
+				return;
+			}
+			m.type_id = typeId;
+			if (m.temp_key) {
+				var nc = self.snapshot.new_collections.find(function (c) {
+					return c.temp_key === m.temp_key;
+				});
+				if (nc) {
+					nc.type_id = typeId;
+				}
+			} else if (m.collection_id) {
+				var col = self.treesById[m.collection_id] || self.treesById[String(m.collection_id)];
+				if (col) {
+					col.type_id = typeId;
+					col.type_name = typeId > 0 ? self.collectionTypeLabel(typeId) : null;
+				}
+			}
+			self.commit();
+		});
 	};
 
 	NewsFormDraft.prototype.rowKey = function (membership) {
@@ -511,14 +596,20 @@
 			var frag = colTpl.content.cloneNode(true);
 			var root = frag.querySelector('[data-row-key]');
 			var titleEl = frag.querySelector('[data-dc-conn-nf-title]');
+			var typeChip = frag.querySelector('[data-dc-conn-nf-type-chip]');
 			var itemsBox = frag.querySelector('[data-dc-conn-nf-items]');
 			var renameBtn = frag.querySelector('[data-dc-conn-nf-rename]');
 			var key = self.rowKey(m);
 			var items = self.itemsForMembership(m, newsTitle);
 			var isDraft = !!m.temp_key;
+			var typeId = self.resolveTypeId(m);
 
 			if (root) root.setAttribute('data-row-key', key);
 			if (titleEl) titleEl.textContent = self.collectionTitle(m);
+			if (typeChip) {
+				typeChip.textContent = self.collectionTypeLabel(typeId);
+				typeChip.setAttribute('title', t('Категория сборки'));
+			}
 			if (renameBtn) {
 				renameBtn.hidden = !isDraft;
 			}
@@ -900,16 +991,19 @@
 			self.snapshot.new_collections.push({
 				temp_key: tempKey,
 				title: title,
-				description: null
+				description: null,
+				type_id: 0,
 			});
 			self.snapshot.memberships.push({
 				collection_id: null,
 				temp_key: tempKey,
+				type_id: 0,
 				relation_type: '',
 				is_visible: true,
 				items: [{
 					news_id: newsId,
 					relation_type: '',
+					comment: '',
 					is_visible: true,
 				}],
 			});
@@ -1098,6 +1192,7 @@
 					target = {
 						collection_id: colId,
 						temp_key: null,
+						type_id: self.resolveTypeId({ collection_id: colId }),
 						relation_type: '',
 						is_visible: true,
 						items: [],
@@ -1158,13 +1253,16 @@
 					is_current: self.isCurrentNewsId(row.news_id),
 				};
 			});
+			var typeId = self.resolveTypeId(m);
 			self.snapshot.new_collections.push({
 				temp_key: tempKey,
 				title: nextTitle,
+				type_id: typeId,
 			});
 			self.snapshot.memberships.push({
 				collection_id: null,
 				temp_key: tempKey,
+				type_id: typeId,
 				relation_type: m.relation_type || '',
 				is_visible: m.is_visible !== undefined ? !!m.is_visible : true,
 				items: cloned,

@@ -84,6 +84,14 @@
 	color: #333;
 }
 
+.dc-conn-nf-type-chip {
+	flex: 0 1 auto;
+	max-width: 160px;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+}
+
 .dc-conn-nf-actions {
 	display: inline-flex;
 	align-items: center;

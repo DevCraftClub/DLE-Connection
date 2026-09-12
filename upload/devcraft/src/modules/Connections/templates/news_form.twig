@@ -8,6 +8,7 @@
 	 data-dc-conn-collections='{{ collections|json_encode|e('html_attr') }}'
 	 data-dc-conn-trees='{{ trees_by_id|json_encode|e('html_attr') }}'
 	 data-dc-conn-relation-types='{{ relation_types|json_encode|e('html_attr') }}'
+	 data-dc-conn-collection-types='{{ collection_types|default([])|json_encode|e('html_attr') }}'
 	 data-admin-edit-news-url="{{ admin_edit_news_url|default('')|e('html_attr') }}">
 	<input type="hidden" name="dc_connections_snapshot" id="dc_connections_snapshot" value="{{ snapshot|json_encode|e('html_attr') }}">
 	<p class="dc-conn-nf-hint">{{ 'Изменения применятся только после сохранения новости.'|trans }}</p>

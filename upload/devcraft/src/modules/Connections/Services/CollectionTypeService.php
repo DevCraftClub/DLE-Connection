@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace DevCraft\Modules\Connections\Services;
 
 use DevCraft\Core\Application;
+use DevCraft\Core\Support\DataManager;
 use DevCraft\Modules\Connections\Models\ConnectionCollectionType;
 use DevCraft\Modules\Connections\Repositories\ConnectionCollectionTypeRepository;
 use RuntimeException;
@@ -60,30 +61,9 @@ final class CollectionTypeService {
 	 * Транслитерация имени в slug-кандидат (для backfill / default).
 	 */
 	public function slugFromName(string $name): string {
-		$map = [
-			'а' => 'a', 'б' => 'b', 'в' => 'v', 'г' => 'g', 'д' => 'd', 'е' => 'e', 'ё' => 'e',
-			'ж' => 'zh', 'з' => 'z', 'и' => 'i', 'й' => 'y', 'к' => 'k', 'л' => 'l', 'м' => 'm',
-			'н' => 'n', 'о' => 'o', 'п' => 'p', 'р' => 'r', 'с' => 's', 'т' => 't', 'у' => 'u',
-			'ф' => 'f', 'х' => 'h', 'ц' => 'ts', 'ч' => 'ch', 'ш' => 'sh', 'щ' => 'sch', 'ъ' => '',
-			'ы' => 'y', 'ь' => '', 'э' => 'e', 'ю' => 'yu', 'я' => 'ya',
-		];
-		$lower = mb_strtolower(trim($name));
-		$out   = '';
-
-		$len = mb_strlen($lower);
-
-		for($i = 0; $i < $len; $i++) {
-			$ch = mb_substr($lower, $i, 1);
-
-			if(isset($map[$ch])) {
-				$out .= $map[$ch];
-			} elseif(preg_match('/[a-z0-9]/', $ch)) {
-				$out .= $ch;
-			} elseif($ch === ' ' || $ch === '_' || $ch === '-') {
-				$out .= '-';
-			}
-		}
-
+		$out = DataManager::toTranslit(trim($name));
+		$out = str_replace(['_', '.'], '-', $out);
+		$out = preg_replace('/[^a-z0-9\-]+/', '', $out) ?? '';
 		$out = preg_replace('/-+/', '-', $out) ?? '';
 		$out = trim($out, '-');
 

@@ -36,6 +36,7 @@ final class NewsFormSyncService {
 			$created = $this->collections->create(
 				$newCol['title'],
 				$newCol['description'],
+				(int) ($newCol['type_id'] ?? 0),
 			);
 			$tempMap[$newCol['temp_key']] = $created->id();
 		}
@@ -57,6 +58,18 @@ final class NewsFormSyncService {
 			}
 
 			$currentMeta = $this->resolveCurrentMeta($membership, $newsId);
+			$typeId      = max(0, (int) ($membership['type_id'] ?? 0));
+
+			$entity = $this->collections->collectionsRepo()->findOneById($collectionId);
+
+			if($entity !== null && (int) ($entity->type_id ?? 0) !== $typeId) {
+				$this->collections->update(
+					$entity,
+					$entity->title,
+					$entity->description,
+					$typeId,
+				);
+			}
 
 			$resolvedCollectionIds[$collectionId] = [
 				'relation_type' => '',

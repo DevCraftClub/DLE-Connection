@@ -6,6 +6,7 @@ namespace DevCraft\Modules\Connections\Controller;
 
 use DevCraft\Core\Application;
 use DevCraft\Modules\Connections\Services\CollectionService;
+use DevCraft\Modules\Connections\Services\CollectionTypeService;
 use DevCraft\Modules\Connections\Services\NewsLookupService;
 use DevCraft\Modules\Connections\Services\PairRelationService;
 use DevCraft\Modules\Connections\Services\RelationTypeService;
@@ -64,6 +65,7 @@ final class NewsFormController {
 			'collections'         => $collectionList,
 			'trees_by_id'         => $treesById,
 			'relation_types'      => (new RelationTypeService())->list(),
+			'collection_types'    => (new CollectionTypeService())->list(),
 			'memberships_html'    => $view->renderNewsMemberships($blocks, $assetsBase),
 			'v_js'                => $vAdmin,
 			'v_css'               => $vCss,
@@ -85,6 +87,7 @@ final class NewsFormController {
 	): array {
 		$blocks    = [];
 		$newTitles = [];
+		$typeNames = (new CollectionTypeService())->nameMap();
 
 		foreach($snapshot['new_collections'] ?? [] as $nc) {
 			if(!is_array($nc)) {
@@ -107,10 +110,31 @@ final class NewsFormController {
 				? 't:' . $tempKey
 				: 'c:' . (int) ($membership['collection_id'] ?? 0);
 
+			$colId = (int) ($membership['collection_id'] ?? 0);
+			$col   = !$isTemp ? ($treesById[$colId] ?? null) : null;
+
 			$collectionTitle = $isTemp
 				? ($newTitles[$tempKey] ?? $tempKey)
-				: (string) ($treesById[(int) ($membership['collection_id'] ?? 0)]['title']
-					?? ('#' . (int) ($membership['collection_id'] ?? 0)));
+				: (string) ($col['title'] ?? ('#' . $colId));
+
+			$typeId = 0;
+
+			if(array_key_exists('type_id', $membership)) {
+				$typeId = (int) $membership['type_id'];
+			} elseif($isTemp) {
+				foreach($snapshot['new_collections'] ?? [] as $ncRow) {
+					if(is_array($ncRow) && (string) ($ncRow['temp_key'] ?? '') === $tempKey) {
+						$typeId = (int) ($ncRow['type_id'] ?? 0);
+						break;
+					}
+				}
+			} else {
+				$typeId = (int) ($col['type_id'] ?? 0);
+			}
+
+			$typeName = $typeId > 0
+				? (string) ($col['type_name'] ?? $typeNames[$typeId] ?? '')
+				: '';
 
 			$items = [];
 
@@ -144,8 +168,6 @@ final class NewsFormController {
 					];
 				}
 			} else {
-				$colId = (int) ($membership['collection_id'] ?? 0);
-				$col   = $treesById[$colId] ?? null;
 				$found = false;
 				$draftItems = is_array($membership['items'] ?? null) ? $membership['items'] : null;
 				$byNews = [];
@@ -225,6 +247,8 @@ final class NewsFormController {
 			$blocks[] = [
 				'row_key'          => $rowKey,
 				'collection_title' => $collectionTitle,
+				'type_id'          => $typeId,
+				'type_name'        => $typeName !== '' ? $typeName : null,
 				'news_title'       => $newsTitle,
 				'is_draft'         => $isTemp,
 				'items'            => $items,
@@ -241,6 +265,12 @@ final class NewsFormController {
 		$memberships = [];
 
 		if($newsId > 0) {
+			$typeByCollection = [];
+
+			foreach($collections->collectionsRepo()->findAllOrdered() as $collection) {
+				$typeByCollection[$collection->id()] = (int) ($collection->type_id ?? 0);
+			}
+
 			foreach($collections->itemsRepo()->findByNewsId($newsId) as $item) {
 				$colItems = [];
 
@@ -270,6 +300,7 @@ final class NewsFormController {
 				$memberships[] = [
 					'collection_id' => $item->collection_id,
 					'temp_key'      => null,
+					'type_id'       => $typeByCollection[$item->collection_id] ?? 0,
 					'relation_type' => '',
 					'is_visible'    => $item->is_visible,
 					'items'         => $colItems,

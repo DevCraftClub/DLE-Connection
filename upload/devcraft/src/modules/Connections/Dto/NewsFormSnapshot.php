@@ -17,11 +17,12 @@ final class NewsFormSnapshot {
 	 * @param list<array{
 	 *     collection_id:?int,
 	 *     temp_key:?string,
+	 *     type_id?:int,
 	 *     relation_type:string,
 	 *     is_visible:bool,
 	 *     items:list<array{news_id:int, relation_type:string, is_visible:bool, news_title?:string}>
 	 * }> $memberships
-	 * @param list<array{temp_key:string, title:string, description:?string}> $newCollections
+	 * @param list<array{temp_key:string, title:string, description:?string, type_id?:int}> $newCollections
 	 */
 	public function __construct(
 		public readonly int $version,
@@ -80,6 +81,7 @@ final class NewsFormSnapshot {
 				'description' => $description !== null && trim($description) !== ''
 					? trim($description)
 					: null,
+				'type_id'     => max(0, (int) ($row['type_id'] ?? 0)),
 			];
 		}
 
@@ -118,14 +120,13 @@ final class NewsFormSnapshot {
 			}
 
 			$relationType = trim((string) ($row['relation_type'] ?? ''));
-			$isVisible    = array_key_exists('is_visible', $row)
-				? (bool) $row['is_visible']
-				: true;
+			$isVisible    = !array_key_exists('is_visible', $row) || $row['is_visible'];
 			$items        = self::parseItems($row['items'] ?? null, $relationType, $isVisible);
 
 			$memberships[] = [
 				'collection_id' => $hasReal ? $collectionId : null,
 				'temp_key'      => $hasTemp ? $tempKey : null,
+				'type_id'       => max(0, (int) ($row['type_id'] ?? 0)),
 				'relation_type' => $relationType,
 				'is_visible'    => $isVisible,
 				'items'         => $items,
