@@ -1,5 +1,5 @@
 <details class="dc-connections-collection">
-	<summary class="dc-connections-summary">
+	<summary class="soft-button dc-connections-summary">
 		<span class="dc-connections-title">{collection-title}</span>
 		[has value="{category-slug}" comparison=""]
 		<span class="dc-connections-category-slug">{category-slug}</span>

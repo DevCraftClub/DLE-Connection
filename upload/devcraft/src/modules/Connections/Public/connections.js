@@ -54,6 +54,18 @@
 		if (window.DevCraftConnectionsAutomation && typeof window.DevCraftConnectionsAutomation.post === 'function') {
 			return window.DevCraftConnectionsAutomation.post(method, data);
 		}
+
+		var payload = data || {};
+		var loaderText = typeof payload.__loaderText === 'string'
+			? payload.__loaderText
+			: t('Выполняем запрос, пожалуйста подождите…');
+		var silent = !!payload.__silent;
+		if (payload.__loaderText !== undefined || payload.__silent !== undefined) {
+			payload = Object.assign({}, payload);
+			delete payload.__loaderText;
+			delete payload.__silent;
+		}
+
 		const params = {
 			controller: 'admin',
 			method: method,
@@ -62,18 +74,26 @@
 		const url = Ajax.url(Ajax.baseUrl(), params);
 		const body = new URLSearchParams({
 			user_hash: Ajax.getUserHash(),
-			data: JSON.stringify(data || {}),
+			data: JSON.stringify(payload),
 		}).toString();
 
-		return fetch(url, {
+		var run = fetch(url, {
 			method: 'POST',
 			headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
 			body: body,
-		}).then(Ajax.parseResponse).then(function (payload) {
+		}).then(Ajax.parseResponse).then(function (res) {
 			if (Ajax.handleNotice) {
-				Ajax.handleNotice(payload);
+				Ajax.handleNotice(res);
 			}
-			return payload;
+			return res;
+		});
+
+		if (silent || !window.DevCraft || !DevCraft.Loader) {
+			return run;
+		}
+		DevCraft.Loader.show(loaderText);
+		return run.finally(function () {
+			DevCraft.Loader.hide();
 		});
 	}
 
@@ -128,8 +148,13 @@
 		if (!created) return null;
 		if (created.nodeType === 1) return created;
 		if (created[0] && created[0].nodeType === 1) return created[0];
+		if (typeof created.item === 'function') {
+			var first = created.item(0);
+			if (first && first.nodeType === 1) return first;
+		}
 		if (created.element && created.element[0]) return created.element[0];
-		if (created.elem) return created.elem;
+		if (created.elem && created.elem.nodeType === 1) return created.elem;
+		if (created.elem && created.elem[0]) return created.elem[0];
 		return null;
 	}
 
@@ -249,21 +274,21 @@
 				customButtons: [
 					{
 						text: t('Сохранить'),
-						cls: 'primary',
-						onclick: function () {
-							var root = dialogNode(dlg);
+						cls: 'js-dialog-close primary',
+						onclick: function (_btn, dialogEl) {
+							var root = dialogNode(dialogEl || dlg);
 							var el = root ? root.querySelector('#dc-conn-ask-text') : document.getElementById('dc-conn-ask-text');
 							pending = el ? String(el.value).trim() : '';
-							closeDialog(dlg);
+							closeDialog(dialogEl || dlg);
 							done(pending || null);
 						},
 					},
 					{
 						text: t('Отмена'),
-						cls: '',
-						onclick: function () {
+						cls: 'js-dialog-close',
+						onclick: function (_btn, dialogEl) {
 							pending = null;
-							closeDialog(dlg);
+							closeDialog(dialogEl || dlg);
 							done(null);
 						},
 					},
@@ -310,19 +335,19 @@
 				customButtons: [
 					{
 						text: t('Удалить'),
-						cls: 'alert',
-						onclick: function () {
+						cls: 'js-dialog-close alert',
+						onclick: function (_btn, dialogEl) {
 							pending = true;
-							closeDialog(dlg);
+							closeDialog(dialogEl || dlg);
 							done(true);
 						},
 					},
 					{
 						text: t('Отмена'),
-						cls: '',
-						onclick: function () {
+						cls: 'js-dialog-close',
+						onclick: function (_btn, dialogEl) {
 							pending = false;
-							closeDialog(dlg);
+							closeDialog(dialogEl || dlg);
 							done(false);
 						},
 					},
@@ -369,22 +394,22 @@
 				customButtons: [
 					{
 						text: okText || t('Выбрать'),
-						cls: 'primary',
-						onclick: function () {
-							var root = dialogNode(dlg);
+						cls: 'js-dialog-close primary',
+						onclick: function (_btn, dialogEl) {
+							var root = dialogNode(dialogEl || dlg);
 							var sid = selectId || 'dc-conn-select-collection';
 							var el = root ? root.querySelector('#' + sid) : document.getElementById(sid);
 							pending = el ? String(el.value) : '';
-							closeDialog(dlg);
+							closeDialog(dialogEl || dlg);
 							done(pending);
 						},
 					},
 					{
 						text: t('Отмена'),
-						cls: '',
-						onclick: function () {
+						cls: 'js-dialog-close',
+						onclick: function (_btn, dialogEl) {
 							pending = null;
-							closeDialog(dlg);
+							closeDialog(dialogEl || dlg);
 							done(null);
 						},
 					},
@@ -1332,7 +1357,11 @@
 			if (e.target.closest('[data-dc-auto-del]')) {
 				confirmDialog(t('Удалить правило'), t('Удалить правило и его условия?')).then(function (ok) {
 					if (!ok) return;
-					return postAuto('auto_rules', { action: 'delete', id: rid }).then(reloadList);
+					return postAuto('auto_rules', {
+						action: 'delete',
+						id: rid,
+						__loaderText: t('Удаляем правило…'),
+					}).then(reloadList);
 				});
 			}
 			var toggleBtn = e.target.closest('[data-dc-auto-toggle]');
@@ -1406,7 +1435,11 @@
 			if (e.target.closest('[data-dc-conn-auto-rule-del]')) {
 				confirmDialog(t('Удалить правило'), t('Удалить правило и его условия?')).then(function (ok) {
 					if (!ok) return;
-					return postAuto('auto_rules', { action: 'delete', id: rid }).then(function () {
+					return postAuto('auto_rules', {
+						action: 'delete',
+						id: rid,
+						__loaderText: t('Удаляем правило…'),
+					}).then(function () {
 						self.reloadList();
 					});
 				});

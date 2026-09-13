@@ -82,7 +82,7 @@ final class FullstoryController {
 					$tpl->set('{alt-name}', htmlspecialchars((string) $item['alt_name'], ENT_QUOTES, 'UTF-8'));
 					$tpl->set('{category}', htmlspecialchars((string) $item['category'], ENT_QUOTES, 'UTF-8'));
 					$tpl->set('{date}', htmlspecialchars((string) $item['date'], ENT_QUOTES, 'UTF-8'));
-					$tpl->compile('dc_conn_item');
+					$tpl->compile('dc_conn_item', true);
 					$collectionItems .= (string) ($tpl->result['dc_conn_item'] ?? '');
 				}
 
@@ -100,7 +100,7 @@ final class FullstoryController {
 				$tpl->set('{is-sequential}', !empty($collection['is_sequential']) ? '1' : '0');
 				$tpl->set('{sort-order}', (string) (int) ($collection['sort_order'] ?? 0));
 				$tpl->set('{items}', $collectionItems);
-				$tpl->compile('dc_conn_list');
+				$tpl->compile('dc_conn_list', true);
 				$itemsHtml .= (string) ($tpl->result['dc_conn_list'] ?? '');
 			}
 		} finally {
