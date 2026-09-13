@@ -1,6 +1,7 @@
 
 <div class="remark dc-conn-dashboard" id="dc-conn-dashboard"
 	 data-assets-base="{{ assets_base }}"
+	 data-automation-enabled="{{ automation_enabled|default(false) ? '1' : '0' }}"
 	 data-dc-conn-tree='{{ tree|json_encode|e('html_attr') }}'
 	 data-dc-conn-relation-types='{{ relation_types|json_encode|e('html_attr') }}'
 	 data-dc-conn-collection-types='{{ collection_types|json_encode|e('html_attr') }}'>

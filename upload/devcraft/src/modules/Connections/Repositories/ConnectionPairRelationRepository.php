@@ -48,6 +48,24 @@ final class ConnectionPairRelationRepository extends AbstractRepository {
 	}
 
 	/**
+	 * Все пары сборки.
+	 *
+	 * @return list<ConnectionPairRelation>
+	 */
+	public function findByCollection(int $collectionId): array {
+		if($collectionId <= 0) {
+			return [];
+		}
+
+		/** @var list<ConnectionPairRelation> $rows */
+		$rows = $this->select()
+			->where('collection_id', $collectionId)
+			->fetchAll();
+
+		return $rows;
+	}
+
+	/**
 	 * Карта to_news_id → pair для нескольких сборок и одного контекста.
 	 *
 	 * @param list<int> $collectionIds

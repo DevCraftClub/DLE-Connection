@@ -12,6 +12,7 @@ use DevCraft\Core\Interfaces\ResponseInterface;
 use DevCraft\Modules\Connections\Services\CollectionService;
 use DevCraft\Modules\Connections\Services\ItemService;
 use DevCraft\Modules\Connections\Services\NewsLookupService;
+use DevCraft\Modules\Connections\Support\AutomationHostBridge;
 use Throwable;
 
 /**
@@ -33,6 +34,7 @@ final class SaveCollectionHandler implements AjaxHandlerInterface {
 			$isSequential = array_key_exists('is_sequential', $request->data)
 				? !empty($request->data['is_sequential'])
 				: null;
+			$membershipChanged = false;
 
 			if($id > 0) {
 				$collection = $service->collectionsRepo()->findOneById($id);
@@ -65,14 +67,23 @@ final class SaveCollectionHandler implements AjaxHandlerInterface {
 					$isSequential ?? true,
 				);
 				(new ItemService($service))->add($collection->id(), $newsId);
+				$membershipChanged = true;
 			}
 
-			return JsonResponse::toast(__('Сборка сохранена'), [
+			$response = JsonResponse::toast(__('Сборка сохранена'), [
 				'id'             => $collection->id(),
 				'title'          => $collection->title,
 				'type_id'        => $collection->type_id,
 				'is_sequential'  => $collection->is_sequential,
 			]);
+
+			// DevCraft ConnectionsAutomation: start
+			if($membershipChanged || $typeId !== null) {
+				$response = AutomationHostBridge::afterMembershipSaved($collection->id(), $response);
+			}
+			// DevCraft ConnectionsAutomation: end
+
+			return $response;
 		} catch(JsonResponseException $e) {
 			return $e->response();
 		} catch(Throwable $e) {

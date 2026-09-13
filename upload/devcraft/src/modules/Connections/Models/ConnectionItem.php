@@ -6,12 +6,15 @@ namespace DevCraft\Modules\Connections\Models;
 
 use Cycle\Annotated\Annotation\Column;
 use Cycle\Annotated\Annotation\Entity;
+use Cycle\Annotated\Annotation\Relation\BelongsTo;
 use Cycle\Annotated\Annotation\Table\Index;
 use DevCraft\Core\Abstracts\AbstractEntity;
 use DevCraft\Modules\Connections\Repositories\ConnectionItemRepository;
 
 /**
- * Новость внутри сборки связей.
+ * Новость внутри сборки связей (явный join news↔collection; не Cycle ManyToMany).
+ *
+ * @see https://cycle-orm.dev/docs/relation-belongs-to/current/en
  */
 #[Entity(
 	role: 'dc_connections_item',
@@ -29,6 +32,7 @@ class ConnectionItem extends AbstractEntity {
 	#[Column(type: 'integer', unsigned: true, default: 0)]
 	public int $news_id = 0;
 
+	/** Legacy; для публичных меток не используется (см. PairRelation + RelationResolutionService). */
 	#[Column(type: 'string', size: 100, default: '')]
 	public string $relation_type = '';
 
@@ -37,6 +41,15 @@ class ConnectionItem extends AbstractEntity {
 
 	#[Column(type: 'integer', unsigned: true, default: 0)]
 	public int $sort_order = 0;
+
+	#[BelongsTo(
+		target: ConnectionCollection::class,
+		innerKey: 'collection_id',
+		cascade: false,
+		fkCreate: false,
+		indexCreate: false,
+	)]
+	public ?ConnectionCollection $collection = null;
 
 	public function __construct() {
 		$this->createdAt = new \DateTimeImmutable();

@@ -31,6 +31,17 @@
 				<img src="{{ assets_base }}/add-item.svg" alt="" width="14" height="14">
 				<span>{{ 'Добавить новость'|trans }}</span>
 			</button>
+			<button type="button"
+					class="btn btn-default btn-xs btn-raised"
+					data-action="automate"
+					data-dc-conn-nf-automate
+					hidden
+					title="{{ 'Automate'|trans }}">
+				{{ 'Automate'|trans }}
+			</button>
+			<span class="text-muted text-small" data-dc-conn-nf-automate-hint hidden>
+				{{ 'Automate доступен после сохранения сборки.'|trans }}
+			</span>
 		</div>
 	</div>
 </template>

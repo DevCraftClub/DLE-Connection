@@ -12,6 +12,7 @@ use DevCraft\Core\Interfaces\ResponseInterface;
 use DevCraft\Modules\Connections\Services\CollectionService;
 use DevCraft\Modules\Connections\Services\ItemService;
 use DevCraft\Modules\Connections\Services\NewsLookupService;
+use DevCraft\Modules\Connections\Support\AutomationHostBridge;
 use Throwable;
 
 /**
@@ -36,19 +37,27 @@ final class SaveItemHandler implements AjaxHandlerInterface {
 					return JsonResponse::fail(__('Ошибка'), __('Элемент не найден'), 'error', 404);
 				}
 
+				$collectionId = $item->collection_id;
 				$nextNewsId = array_key_exists('news_id', $request->data) ? $newsId : null;
 				$nextType   = array_key_exists('relation_type', $request->data) ? $relationType : null;
 				$nextVis    = array_key_exists('is_visible', $request->data) ? $isVisible : null;
 				$service->update($item, $nextType, $nextVis, $nextNewsId > 0 ? $nextNewsId : null);
 			} else {
 				$item = $service->add($collectionId, $newsId, $relationType, $isVisible);
+				$collectionId = $item->collection_id;
 			}
 
-			return JsonResponse::toast(__('Элемент сохранён'), [
+			$response = JsonResponse::toast(__('Элемент сохранён'), [
 				'id'         => $item->id(),
 				'news_id'    => $item->news_id,
 				'news_title' => NewsLookupService::titleById($item->news_id),
 			]);
+
+			// DevCraft ConnectionsAutomation: start
+			$response = AutomationHostBridge::afterMembershipSaved($collectionId, $response);
+			// DevCraft ConnectionsAutomation: end
+
+			return $response;
 		} catch(JsonResponseException $e) {
 			return $e->response();
 		} catch(Throwable $e) {

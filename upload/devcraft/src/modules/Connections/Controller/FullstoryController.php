@@ -17,10 +17,11 @@ final class FullstoryController {
 	 * Набор шаблонов: `templates/Air/devcraft/connections/` (по умолчанию, DLE 21)
 	 * или `templates/Air/devcraft/connections/{template}/` при параметре template.
 	 *
-	 * @param string|null $typeInclude    whitelist id типов сборок через `,`
-	 * @param string|null $typeExclude    blacklist id типов сборок через `,`
-	 * @param string|null $categorySlug   canon filter; alias handled in show_connections.php
-	 * @param string|null $template       подпапка набора tpl (alias templates)
+	 * @param string|null $typeInclude       whitelist id типов сборок через `,`
+	 * @param string|null $typeExclude       blacklist id типов сборок через `,`
+	 * @param string|null $categorySlug      фильтр по ярлыку категории (param `category` в include)
+	 * @param string|null $template          подпапка набора tpl (param `template`)
+	 * @param string|null $categoryExclude   blacklist ярлыков категорий через `,` (param `category_exclude`)
 	 */
 	public function render(
 		int $newsId,
@@ -28,6 +29,7 @@ final class FullstoryController {
 		?string $typeExclude = null,
 		?string $categorySlug = null,
 		?string $template = null,
+		?string $categoryExclude = null,
 	): string {
 		global $tpl, $config;
 
@@ -40,6 +42,7 @@ final class FullstoryController {
 			self::parseIdList($typeInclude),
 			self::parseIdList($typeExclude),
 			$categorySlug,
+			self::parseSlugList($categoryExclude),
 		);
 
 		if($tree === []) {
@@ -196,6 +199,27 @@ final class FullstoryController {
 		}
 
 		return array_values($ids);
+	}
+
+	/**
+	 * @return list<string>
+	 */
+	private static function parseSlugList(?string $raw): array {
+		if($raw === null || trim($raw) === '') {
+			return [];
+		}
+
+		$slugs = [];
+
+		foreach(preg_split('/[\s,]+/', $raw) ?: [] as $part) {
+			$slug = trim((string) $part);
+
+			if($slug !== '') {
+				$slugs[$slug] = $slug;
+			}
+		}
+
+		return array_values($slugs);
 	}
 
 }

@@ -38,5 +38,14 @@
 			<img src="{{ assets_base }}/add-item.svg" alt="" width="14" height="14">
 			{{ 'Добавить новость'|trans }}
 		</button>
+		{% if automation_enabled|default(false) %}
+			{% if is_draft|default(false) %}
+				<span class="text-muted text-small">{{ 'Automate доступен после сохранения сборки.'|trans }}</span>
+			{% else %}
+				<button type="button" class="btn btn-default btn-xs btn-raised" data-action="automate" title="{{ 'Automate'|trans }}">
+					{{ 'Automate'|trans }}
+				</button>
+			{% endif %}
+		{% endif %}
 	</div>
 </div>

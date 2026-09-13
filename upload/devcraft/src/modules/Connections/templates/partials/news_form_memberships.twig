@@ -4,7 +4,8 @@
 	{% for block in blocks %}
 		{% include '@connections/partials/news_form_collection.twig' with block|merge({
 			assets_base: assets_base,
-			admin_edit_news_url: admin_edit_news_url|default('')
+			admin_edit_news_url: admin_edit_news_url|default(''),
+			automation_enabled: automation_enabled|default(false)
 		}) only %}
 	{% endfor %}
 {% endif %}

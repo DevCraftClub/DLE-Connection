@@ -11,6 +11,7 @@ use DevCraft\Modules\Connections\Services\NewsLookupService;
 use DevCraft\Modules\Connections\Services\PairRelationService;
 use DevCraft\Modules\Connections\Services\RelationTypeService;
 use DevCraft\Modules\Connections\Services\TreeViewService;
+use DevCraft\Modules\Connections\Support\AutomationHostBridge;
 
 /**
  * Рендер Twig-виджета связей в форме новости админки DLE (черновик).
@@ -66,7 +67,12 @@ final class NewsFormController {
 			'trees_by_id'         => $treesById,
 			'relation_types'      => (new RelationTypeService())->list(),
 			'collection_types'    => (new CollectionTypeService())->list(),
-			'memberships_html'    => $view->renderNewsMemberships($blocks, $assetsBase),
+			'memberships_html'    => $view->renderNewsMemberships(
+				$blocks,
+				$assetsBase,
+				AutomationHostBridge::isEnabled(),
+			),
+			'automation_enabled'  => AutomationHostBridge::isEnabled(),
 			'v_js'                => $vAdmin,
 			'v_css'               => $vCss,
 		]);

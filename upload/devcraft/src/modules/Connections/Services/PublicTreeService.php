@@ -20,9 +20,10 @@ final class PublicTreeService {
 	/**
 	 * Сборки, где есть $newsId: без текущей новости, только visible, пустые убрать.
 	 *
-	 * @param list<int>   $typeInclude   whitelist type_id (пусто = без whitelist)
-	 * @param list<int>   $typeExclude   blacklist type_id
-	 * @param string|null $categorySlug  если задан — только категория с этим slug (исключает type_id=0)
+	 * @param list<int>    $typeInclude      whitelist type_id (пусто = без whitelist)
+	 * @param list<int>    $typeExclude      blacklist type_id
+	 * @param string|null  $categorySlug     если задан — только категория с этим slug (исключает type_id=0)
+	 * @param list<string> $categoryExclude  blacklist ярлыков категорий (как type_exclude, но по slug)
 	 * @return list<array{
 	 *     id:int,
 	 *     title:string,
@@ -39,22 +40,40 @@ final class PublicTreeService {
 		array $typeInclude = [],
 		array $typeExclude = [],
 		?string $categorySlug = null,
+		array $categoryExclude = [],
 	): array {
 		if($newsId <= 0) {
 			return [];
 		}
 
-		$slugFilter = $categorySlug !== null ? trim($categorySlug) : '';
-		$slugTypeId = null;
+		$typeService = new CollectionTypeService();
+		$slugFilter  = $categorySlug !== null ? trim($categorySlug) : '';
+		$slugTypeId  = null;
 
 		if($slugFilter !== '') {
-			$type = (new CollectionTypeService())->repo()->findOneBySlug($slugFilter);
+			$type = $typeService->repo()->findOneBySlug($slugFilter);
 
 			if($type === null) {
 				return [];
 			}
 
 			$slugTypeId = $type->id();
+		}
+
+		$categoryExcludeTypeIds = [];
+
+		if($slugTypeId === null && $categoryExclude !== []) {
+			$slugToId = array_flip($typeService->slugMap());
+
+			foreach($categoryExclude as $excludeSlug) {
+				$key = trim((string) $excludeSlug);
+
+				if($key !== '' && isset($slugToId[$key])) {
+					$categoryExcludeTypeIds[(int) $slugToId[$key]] = (int) $slugToId[$key];
+				}
+			}
+
+			$categoryExcludeTypeIds = array_values($categoryExcludeTypeIds);
 		}
 
 		$focusSortByCollection = [];
@@ -91,7 +110,7 @@ final class PublicTreeService {
 
 		$collectionIds = array_keys($byCollection);
 		$pairMap       = $this->pairs->repo()->mapForFocus($collectionIds, $newsId);
-		$typeSlugMap   = (new CollectionTypeService())->slugMap();
+		$typeSlugMap   = $typeService->slugMap();
 		$posts         = NewsLookupService::postsByIds($newsIds);
 		$tree          = [];
 
@@ -109,6 +128,10 @@ final class PublicTreeService {
 				}
 
 				if($typeExclude !== [] && in_array($typeId, $typeExclude, true)) {
+					continue;
+				}
+
+				if($categoryExcludeTypeIds !== [] && in_array($typeId, $categoryExcludeTypeIds, true)) {
 					continue;
 				}
 			}

@@ -1,0 +1,56 @@
+<div id="dc-conn-auto-rules-page"
+	 data-dc-conn-auto-page="1"
+	 data-assets-base="{{ assets_base }}"
+	 data-category-id="{{ category_id|default(0) }}">
+	<div class="d-flex flex-align-center flex-justify-between mb-3">
+		<div>
+			<h2 class="mb-0">{{ page_title|default('Правила автоматизации'|trans) }}</h2>
+			<p class="text-muted text-small mb-0">
+				{{ 'Отдельный аддон к Connections: правила привязаны к категории сборки.'|trans }}
+			</p>
+		</div>
+	</div>
+
+	{% if not automation_enabled %}
+		<div class="remark alert">
+			{{ 'Модуль автоматизации недоступен. Проверьте установку плагина Connections Automation.'|trans }}
+		</div>
+	{% else %}
+		<label class="d-block mb-1" for="dc-conn-auto-category">{{ 'Категория сборки'|trans }}</label>
+		<select id="dc-conn-auto-category" class="metro-input mb-3" style="max-width: 28rem;">
+			<option value="0">{{ 'Выберите категорию…'|trans }}</option>
+			{% for type in collection_types|default([]) %}
+				<option value="{{ type.id }}" {% if category_id == type.id %}selected{% endif %}>
+					{{ type.name }} {% if type.slug %}({{ type.slug }}){% endif %}
+				</option>
+			{% endfor %}
+		</select>
+
+		{% if category_id > 0 %}
+			{% include '@connectionsautomation/partials/rules_embed.twig' with {
+				category_id: category_id
+			} only %}
+		{% else %}
+			<p class="text-muted">{{ 'Выберите категорию, чтобы управлять правилами.'|trans }}</p>
+		{% endif %}
+	{% endif %}
+</div>
+
+{% include '@connections/partials/dialogs.twig' %}
+
+<script>
+(function () {
+	var sel = document.getElementById('dc-conn-auto-category');
+	if (!sel) return;
+	sel.addEventListener('change', function () {
+		var id = String(sel.value || '0');
+		var url = new URL(window.location.href);
+		if (id === '0') {
+			url.searchParams.delete('category_id');
+		} else {
+			url.searchParams.set('category_id', id);
+		}
+		window.location.href = url.toString();
+	});
+})();
+</script>

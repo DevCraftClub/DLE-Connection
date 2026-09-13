@@ -11,7 +11,10 @@ use DevCraft\Core\Abstracts\AbstractEntity;
 use DevCraft\Modules\Connections\Repositories\ConnectionRelationTypeRepository;
 
 /**
- * Тип связи между новостями.
+ * Тип связи между новостями (каталог имён).
+ *
+ * На пары/элементы ссылается строкой `relation_type` / `target_relation_type`, не FK —
+ * поэтому BelongsTo/HasMany к каталогу не объявляем.
  */
 #[Entity(
 	role: 'dc_connections_relation_type',

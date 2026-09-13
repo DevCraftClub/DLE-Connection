@@ -10,6 +10,20 @@
 		<button type="button" class="button small outline dc-conn-seq-chip" data-action="toggle-sequential" title="{{ 'Последовательная сборка'|trans }}">
 			{{ col.is_sequential|default(true) ? ('Последовательная'|trans) : ('Произвольная'|trans) }}
 		</button>
+		{# DevCraft ConnectionsAutomation: start #}
+		<span class="dc-conn-auto-chip button small outline"
+			  data-dc-conn-auto-chip
+			  data-collection-id="{{ col.id }}"
+			  hidden
+			  title="{{ 'Статус автоматизации'|trans }}">—</span>
+		<button type="button"
+				class="button small outline"
+				data-action="automate-collection"
+				data-dc-conn-automate
+				data-collection-id="{{ col.id }}"
+				hidden
+				title="{{ 'Автоматизировать пары'|trans }}">⚡ {{ 'Automate'|trans }}</button>
+		{# DevCraft ConnectionsAutomation: end #}
 		<span class="dc-conn-actions">
 			<button type="button" class="button cycle outline dc-conn-icon-btn" data-action="save-collection" title="{{ 'Сохранить сборку'|trans }}">
 				<img src="{{ assets_base }}/save.svg" alt="" width="16" height="16">

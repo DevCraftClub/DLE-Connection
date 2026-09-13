@@ -11,6 +11,7 @@ use DevCraft\Core\Interfaces\AjaxHandlerInterface;
 use DevCraft\Core\Interfaces\ResponseInterface;
 use DevCraft\Modules\Connections\Services\CollectionService;
 use DevCraft\Modules\Connections\Services\ItemService;
+use DevCraft\Modules\Connections\Support\AutomationHostBridge;
 use Throwable;
 
 /**
@@ -28,12 +29,19 @@ final class ToggleItemVisibilityHandler implements AjaxHandlerInterface {
 				return JsonResponse::fail(__('Ошибка'), __('Элемент не найден'), 'error', 404);
 			}
 
-			$item = (new ItemService())->toggleVisibility($item);
+			$collectionId = $item->collection_id;
+			$item         = (new ItemService())->toggleVisibility($item);
 
-			return JsonResponse::toast(
+			$response = JsonResponse::toast(
 				$item->is_visible ? __('Элемент показан') : __('Элемент скрыт'),
 				['is_visible' => $item->is_visible],
 			);
+
+			// DevCraft ConnectionsAutomation: start
+			$response = AutomationHostBridge::afterMembershipSaved($collectionId, $response);
+			// DevCraft ConnectionsAutomation: end
+
+			return $response;
 		} catch(JsonResponseException $e) {
 			return $e->response();
 		} catch(Throwable $e) {

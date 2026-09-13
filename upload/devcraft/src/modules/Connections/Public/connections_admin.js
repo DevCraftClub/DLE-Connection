@@ -220,6 +220,46 @@
 	}
 
 	/**
+	 * AJAX сателлита Automate через host mod (list_rules / run_automation).
+	 *
+	 * @param {string} mod
+	 * @param {string} method
+	 * @param {object} data
+	 * @returns {Promise<object>}
+	 */
+	function postAutoAjax(mod, method, data) {
+		var url = ajaxRoot() + 'devcraft/ajax.php?controller=admin&mod='
+			+ encodeURIComponent(mod || 'dle_connections')
+			+ '&method=' + encodeURIComponent(method);
+		return new Promise(function (resolve, reject) {
+			$.ajax({
+				url: url,
+				type: 'POST',
+				dataType: 'json',
+				data: {
+					user_hash: userHash(),
+					data: JSON.stringify(data || {}),
+				},
+			}).done(function (payload) {
+				if (payload && payload.success === false) {
+					reject(new Error(String(payload.message || t('Ошибка Automate'))));
+					return;
+				}
+				resolve(payload && payload.data ? payload.data : (payload || {}));
+			}).fail(function (xhr) {
+				var msg = t('Ошибка Automate');
+				try {
+					var parsed = JSON.parse(xhr.responseText || '{}');
+					if (parsed && parsed.message) {
+						msg = String(parsed.message);
+					}
+				} catch (e) { /* ignore */ }
+				reject(new Error(msg));
+			});
+		});
+	}
+
+	/**
 	 * Диалог поиска новости (jQuery UI, без Metro).
 	 *
 	 * @param {string} mod
@@ -359,6 +399,7 @@
 		if (!Array.isArray(this.collectionTypes)) {
 			this.collectionTypes = [];
 		}
+		this.automationEnabled = root.getAttribute('data-automation-enabled') === '1';
 		this.snapshot = parseJsonAttr(root, 'data-dc-conn-snapshot', null);
 		if (!this.snapshot || typeof this.snapshot !== 'object') {
 			this.snapshot = { version: 1, memberships: [], new_collections: [] };
@@ -439,6 +480,9 @@
 			}
 			if (action === 'set-collection-type') {
 				self.setCollectionType(key);
+			}
+			if (action === 'automate') {
+				self.automateMembership(key);
 			}
 		});
 	};
@@ -534,6 +578,80 @@
 		});
 	};
 
+	/**
+	 * Automate только для одной сохранённой сборки (FR-001g).
+	 * Без ссылок на редактор правил (FR-001b/f).
+	 */
+	NewsFormDraft.prototype.automateMembership = function (key) {
+		var self = this;
+		if (!this.automationEnabled) {
+			return;
+		}
+		var m = this.findMembership(key);
+		if (!m || m.temp_key || !(m.collection_id > 0)) {
+			notify(t('Automate доступен после сохранения сборки.'), 'warning');
+			return;
+		}
+		var collectionId = parseInt(m.collection_id, 10) || 0;
+		if (!collectionId) {
+			return;
+		}
+
+		postAutoAjax(this.ajaxMod, 'list_rules_for_collection', { collection_id: collectionId })
+			.then(function (data) {
+				var rules = Array.isArray(data.rules) ? data.rules : [];
+				if (!rules.length) {
+					notify(t('Нет активных правил для категории этой сборки.'), 'warning');
+					return null;
+				}
+
+				var ruleOptions = rules.map(function (r) {
+					return {
+						value: String(r.id),
+						label: (r.rule_name || r.pattern_type || ('#' + r.id)) + ' (' + r.pattern_type + ')',
+					};
+				});
+				var modeOptions = [
+					{ value: 'preserve', label: t('Preserve (сохранить ручные типы)') },
+					{ value: 'full_reset', label: t('Full reset (перезаписать всё)') },
+				];
+
+				return selectDialog(t('Automate'), t('Правило'), ruleOptions, String(rules[0].id)).then(function (ruleVal) {
+					if (ruleVal === null) {
+						return null;
+					}
+					return selectDialog(t('Automate'), t('Режим'), modeOptions, 'preserve').then(function (modeVal) {
+						if (modeVal === null) {
+							return null;
+						}
+						return {
+							ruleId: parseInt(ruleVal, 10) || 0,
+							mode: modeVal || 'preserve',
+						};
+					});
+				});
+			})
+			.then(function (choice) {
+				if (!choice || !choice.ruleId) {
+					return null;
+				}
+				return postAutoAjax(self.ajaxMod, 'run_automation', {
+					collection_id: collectionId,
+					rule_id: choice.ruleId,
+					mode: choice.mode,
+				});
+			})
+			.then(function (result) {
+				if (!result) {
+					return;
+				}
+				notify(t('Automate выполнен для этой сборки.'), 'info');
+			})
+			.catch(function (err) {
+				notify(err && err.message ? err.message : t('Ошибка Automate'), 'error');
+			});
+	};
+
 	NewsFormDraft.prototype.rowKey = function (membership) {
 		if (membership.temp_key) {
 			return 't:' + membership.temp_key;
@@ -612,6 +730,20 @@
 			}
 			if (renameBtn) {
 				renameBtn.hidden = !isDraft;
+			}
+
+			var autoBtn = frag.querySelector('[data-dc-conn-nf-automate]');
+			var autoHint = frag.querySelector('[data-dc-conn-nf-automate-hint]');
+			if (self.automationEnabled) {
+				if (autoBtn) {
+					autoBtn.hidden = isDraft || !(m.collection_id > 0);
+				}
+				if (autoHint) {
+					autoHint.hidden = !isDraft;
+				}
+			} else {
+				if (autoBtn) autoBtn.remove();
+				if (autoHint) autoHint.remove();
 			}
 
 			items.forEach(function (entry) {

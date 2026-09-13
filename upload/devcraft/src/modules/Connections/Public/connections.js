@@ -2,7 +2,7 @@
 	'use strict';
 
 	if (!window.DevCraft) {
-		console.error('[Connections] Сначала должен быть загружен DevCraft core.');
+		console.error(t('[Connections] Сначала должен быть загружен DevCraft core.'));
 		return;
 	}
 
@@ -46,6 +46,58 @@
 		});
 	}
 
+	/**
+	 * DevCraft ConnectionsAutomation: AJAX через host Connections
+	 * (сателлит extends → методы вливаются в dle_connections).
+	 */
+	function postAuto(method, data) {
+		if (window.DevCraftConnectionsAutomation && typeof window.DevCraftConnectionsAutomation.post === 'function') {
+			return window.DevCraftConnectionsAutomation.post(method, data);
+		}
+		const params = {
+			controller: 'admin',
+			method: method,
+			mod: (document.body && document.body.dataset.mod) || 'dle_connections',
+		};
+		const url = Ajax.url(Ajax.baseUrl(), params);
+		const body = new URLSearchParams({
+			user_hash: Ajax.getUserHash(),
+			data: JSON.stringify(data || {}),
+		}).toString();
+
+		return fetch(url, {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+			body: body,
+		}).then(Ajax.parseResponse).then(function (payload) {
+			if (Ajax.handleNotice) {
+				Ajax.handleNotice(payload);
+			}
+			return payload;
+		});
+	}
+
+	function payloadData(payload) {
+		if (!payload) return {};
+		if (payload.data && typeof payload.data === 'object') return payload.data;
+		return payload;
+	}
+
+	function showAutomationConflict(payload, collectionId) {
+		var data = payloadData(payload);
+		if (!data.automation_conflict) return;
+		confirmDialog(
+			t('Конфликт правил'),
+			t('Для категории активно несколько правил автоматизации. Запустить Automate вручную?')
+		).then(function (ok) {
+			if (!ok || !collectionId) return;
+			var ui = window.__dcConnLastUi;
+			if (ui && typeof ui.automateCollection === 'function') {
+				ui.automateCollection(collectionId);
+			}
+		});
+	}
+
 	function parseJsonAttr(el, name, fallback) {
 		try {
 			var raw = el.getAttribute(name);
@@ -82,36 +134,62 @@
 	}
 
 	/**
-	 * Явное закрытие: у customButtons с onclick делегат `.js-dialog-close` часто не срабатывает.
+	 * Явное закрытие диалога.
+	 * Metro hide() асинхронен; #dc-filter-dialog не трогаем — иначе залипает runtime-диалог.
 	 */
 	function closeDialog(createdOrEl) {
-		var el = dialogNode(createdOrEl) || createdOrEl;
+		var el = dialogNode(createdOrEl);
+		if (el && el.id === 'dc-filter-dialog') {
+			el = null;
+		}
+		if (!el || el.nodeType !== 1) {
+			el = Array.prototype.find.call(document.querySelectorAll('body > .dialog'), function (d) {
+				return d.id !== 'dc-filter-dialog' && getComputedStyle(d).visibility === 'visible';
+			}) || null;
+		}
 		if (!el) return;
-		if (Metro && typeof Metro.dialogClose === 'function') {
-			Metro.dialogClose(el);
-			return;
+
+		try {
+			var lib = window.Metro;
+			var plugin = lib && typeof lib.getPlugin === 'function' ? lib.getPlugin(el, 'dialog') : null;
+			if (plugin && typeof plugin.close === 'function') {
+				plugin.close();
+			} else if (Metro && typeof Metro.dialogClose === 'function') {
+				Metro.dialogClose(el);
+			}
+		} catch (e) {
+			/* ниже — форс-снятие */
 		}
-		var api = Metro && typeof Metro.dialogApi === 'function' ? Metro.dialogApi() : null;
-		if (api && typeof api.close === 'function') {
-			api.close(el);
-			return;
-		}
-		var plugin = Metro && typeof Metro.getPlugin === 'function' ? Metro.getPlugin(el, 'dialog') : null;
-		if (plugin && typeof plugin.close === 'function') {
-			plugin.close();
-		}
+
+		// ponytail: Metro hide() через setTimeout — UI может «залипнуть»; форс через 0ms.
+		setTimeout(function () {
+			if (!el || !el.isConnected || el.id === 'dc-filter-dialog') {
+				return;
+			}
+			if (getComputedStyle(el).visibility !== 'hidden') {
+				el.style.visibility = 'hidden';
+				el.style.top = '100%';
+			}
+			el.remove();
+			var anyOpen = Array.prototype.some.call(document.querySelectorAll('body > .dialog'), function (d) {
+				return d.id !== 'dc-filter-dialog' && getComputedStyle(d).visibility === 'visible';
+			});
+			if (!anyOpen) {
+				document.querySelectorAll('body > .overlay').forEach(function (ov) {
+					ov.remove();
+				});
+			}
+		}, 0);
 	}
 
-	/** Крестик Metro: делегат `.js-dialog-close` ненадёжен вместе с customButtons.onclick. */
+	/** Крестик: не stopPropagation — иначе блокируется Metro `.js-dialog-close`. */
 	function bindDialogCloser(created, onClick) {
 		var root = dialogNode(created);
 		if (!root) return;
 		var closer = root.querySelector('span.closer');
 		if (!closer || closer.getAttribute('data-dc-conn-close-bound')) return;
 		closer.setAttribute('data-dc-conn-close-bound', '1');
-		closer.addEventListener('click', function (e) {
-			e.preventDefault();
-			e.stopPropagation();
+		closer.addEventListener('click', function () {
 			if (typeof onClick === 'function') onClick();
 			closeDialog(created);
 		});
@@ -146,18 +224,22 @@
 				return;
 			}
 			var frag = cloneTemplate('dc-conn-tpl-ask-text');
-			if (!frag) {
-				var missing = window.prompt(label || title, initial || '');
-				done(missing === null ? null : String(missing).trim());
-				return;
+			var contentHtml;
+			if (frag) {
+				var labelEl = frag.querySelector('[data-dc-conn-label]');
+				var input = frag.querySelector('#dc-conn-ask-text');
+				if (labelEl) labelEl.textContent = label || t('Название');
+				if (input) input.value = initial || '';
+				contentHtml = fragmentToHtml(frag);
+			} else {
+				contentHtml =
+					'<label class="d-block mb-1">' + (label || t('Название')) + '</label>' +
+					'<input type="text" id="dc-conn-ask-text" class="metro-input" style="width:100%" value="' +
+					String(initial || '').replace(/"/g, '&quot;') + '">';
 			}
-			var labelEl = frag.querySelector('[data-dc-conn-label]');
-			var input = frag.querySelector('#dc-conn-ask-text');
-			if (labelEl) labelEl.textContent = label || t('Название');
-			if (input) input.value = initial || '';
 			var dlg = Metro.dialogCreate({
 				title: title,
-				content: fragmentToHtml(frag),
+				content: contentHtml,
 				closeButton: true,
 				defaultActions: false,
 				removeOnClose: true,
@@ -167,21 +249,22 @@
 				customButtons: [
 					{
 						text: t('Сохранить'),
-						cls: 'primary js-dialog-close',
+						cls: 'primary',
 						onclick: function () {
-							var el = document.getElementById('dc-conn-ask-text');
+							var root = dialogNode(dlg);
+							var el = root ? root.querySelector('#dc-conn-ask-text') : document.getElementById('dc-conn-ask-text');
 							pending = el ? String(el.value).trim() : '';
-							done(pending || null);
 							closeDialog(dlg);
+							done(pending || null);
 						},
 					},
 					{
 						text: t('Отмена'),
-						cls: 'js-dialog-close',
+						cls: '',
 						onclick: function () {
 							pending = null;
-							done(null);
 							closeDialog(dlg);
+							done(null);
 						},
 					},
 				],
@@ -207,15 +290,17 @@
 				return;
 			}
 			var frag = cloneTemplate('dc-conn-tpl-confirm');
-			if (!frag) {
-				done(window.confirm(message));
-				return;
+			var contentHtml;
+			if (frag) {
+				var msgEl = frag.querySelector('[data-dc-conn-message]');
+				if (msgEl) msgEl.textContent = message;
+				contentHtml = fragmentToHtml(frag);
+			} else {
+				contentHtml = '<p>' + String(message || '').replace(/</g, '&lt;') + '</p>';
 			}
-			var msgEl = frag.querySelector('[data-dc-conn-message]');
-			if (msgEl) msgEl.textContent = message;
 			var dlg = Metro.dialogCreate({
 				title: title,
-				content: fragmentToHtml(frag),
+				content: contentHtml,
 				closeButton: true,
 				defaultActions: false,
 				removeOnClose: true,
@@ -225,20 +310,20 @@
 				customButtons: [
 					{
 						text: t('Удалить'),
-						cls: 'alert js-dialog-close',
+						cls: 'alert',
 						onclick: function () {
 							pending = true;
-							done(true);
 							closeDialog(dlg);
+							done(true);
 						},
 					},
 					{
 						text: t('Отмена'),
-						cls: 'js-dialog-close',
+						cls: '',
 						onclick: function () {
 							pending = false;
-							done(false);
 							closeDialog(dlg);
+							done(false);
 						},
 					},
 				],
@@ -284,21 +369,23 @@
 				customButtons: [
 					{
 						text: okText || t('Выбрать'),
-						cls: 'primary js-dialog-close',
+						cls: 'primary',
 						onclick: function () {
-							var el = document.getElementById(selectId || 'dc-conn-select-collection');
+							var root = dialogNode(dlg);
+							var sid = selectId || 'dc-conn-select-collection';
+							var el = root ? root.querySelector('#' + sid) : document.getElementById(sid);
 							pending = el ? String(el.value) : '';
-							done(pending);
 							closeDialog(dlg);
+							done(pending);
 						},
 					},
 					{
 						text: t('Отмена'),
-						cls: 'js-dialog-close',
+						cls: '',
 						onclick: function () {
 							pending = null;
-							done(null);
 							closeDialog(dlg);
+							done(null);
 						},
 					},
 				],
@@ -313,6 +400,7 @@
 	function ConnectionsUI(root) {
 		this.root = root;
 		this.assets = root.getAttribute('data-assets-base') || '';
+		this.automationEnabled = root.getAttribute('data-automation-enabled') === '1';
 		this.tree = parseJsonAttr(root, 'data-dc-conn-tree', []);
 		/* Категории сборок (type_id) и типы связей элементов — разные справочники. */
 		this.relationTypes = parseJsonAttr(root, 'data-dc-conn-relation-types', []);
@@ -323,6 +411,11 @@
 		this.bind();
 		this.bindTreeview();
 		this.bindDrag();
+		window.__dcConnLastUi = this;
+		if (this.automationEnabled) {
+			this.showAutomationControls();
+			this.refreshAutomationChips();
+		}
 	}
 
 	ConnectionsUI.prototype.syncContextsFromTree = function () {
@@ -370,6 +463,9 @@
 				var cid = colEl ? parseInt(colEl.getAttribute('data-collection-id'), 10) : 0;
 				if (cid) self.toggleSequential(cid);
 			}
+			if (action === 'automate-collection' && self.automationEnabled) {
+				self.automateCollection(colId);
+			}
 		});
 	};
 
@@ -380,6 +476,10 @@
 		this.collectionsEl.innerHTML = html;
 		this.bindTreeview();
 		this.bindDrag();
+		if (this.automationEnabled) {
+			this.showAutomationControls();
+			this.refreshAutomationChips();
+		}
 	};
 
 	ConnectionsUI.prototype.unbindTreeview = function () {
@@ -537,7 +637,17 @@
 			});
 		});
 		if (!payload.length) return;
-		postSilent('reorder_items', { items: payload });
+		var self = this;
+		postSilent('reorder_items', { items: payload }).then(function (res) {
+			var data = payloadData(res);
+			if (data.automation_conflict) {
+				var cid = payload[0] && payload[0].collection_id;
+				showAutomationConflict(res, cid);
+			}
+			if (self.automationEnabled) {
+				self.refreshAutomationChips();
+			}
+		});
 	};
 
 	ConnectionsUI.prototype.createCollection = function () {
@@ -627,7 +737,10 @@
 				is_visible: 1,
 			});
 		}).then(function (payload) {
-			if (payload) return self.reload();
+			if (payload) {
+				showAutomationConflict(payload, collectionId);
+				return self.reload();
+			}
 		});
 	};
 
@@ -640,7 +753,8 @@
 			news_id: found.item.news_id,
 			relation_type: found.item.relation_type || '',
 			is_visible: found.item.is_visible ? 1 : 0,
-		}).then(function () {
+		}).then(function (payload) {
+			showAutomationConflict(payload, found.collectionId);
 			return self.reload();
 		});
 	};
@@ -688,7 +802,10 @@
 		var self = this;
 		confirmDialog(t('Удалить элемент'), t('Убрать новость из сборки?')).then(function (ok) {
 			if (!ok) return;
-			return post('delete_item', { id: id }).then(function () {
+			var found = self.findItem(id);
+			var cid = found ? found.collectionId : 0;
+			return post('delete_item', { id: id }).then(function (payload) {
+				showAutomationConflict(payload, cid);
 				return self.reload();
 			});
 		});
@@ -696,7 +813,10 @@
 
 	ConnectionsUI.prototype.toggleItem = function (id) {
 		var self = this;
-		post('toggle_item_visibility', { id: id }).then(function () {
+		var found = this.findItem(id);
+		var cid = found ? found.collectionId : 0;
+		post('toggle_item_visibility', { id: id }).then(function (payload) {
+			showAutomationConflict(payload, cid);
 			return self.reload();
 		});
 	};
@@ -822,8 +942,9 @@
 				defaultActions: false,
 				removeOnClose: true,
 				onOpen: function () {
-					var input = document.getElementById('dc-conn-news-q');
-					var box = document.getElementById('dc-conn-news-results');
+					var root = dialogNode(dlg);
+					var input = root ? root.querySelector('#dc-conn-news-q') : document.getElementById('dc-conn-news-q');
+					var box = root ? root.querySelector('#dc-conn-news-results') : document.getElementById('dc-conn-news-results');
 					var timer = null;
 					function runSearch() {
 						var q = input ? input.value.trim() : '';
@@ -852,8 +973,8 @@
 								id: parseInt(btn.getAttribute('data-news-id'), 10),
 								title: btn.getAttribute('data-news-title') || '',
 							};
-							done(pending);
 							closeDialog(dlg);
+							done(pending);
 						});
 					}
 				},
@@ -863,11 +984,11 @@
 				customButtons: [
 					{
 						text: t('Закрыть'),
-						cls: 'js-dialog-close',
+						cls: '',
 						onclick: function () {
 							pending = null;
-							done(null);
 							closeDialog(dlg);
+							done(null);
 						},
 					},
 				],
@@ -962,12 +1083,109 @@
 		});
 	};
 
+	/* DevCraft ConnectionsAutomation: start */
+	ConnectionsUI.prototype.showAutomationControls = function () {
+		if (!this.root) return;
+		this.root.querySelectorAll('[data-dc-conn-auto-chip], [data-dc-conn-automate]').forEach(function (el) {
+			el.hidden = false;
+		});
+	};
+
+	ConnectionsUI.prototype.refreshAutomationChips = function () {
+		if (!this.automationEnabled || !this.root) return;
+		this.root.querySelectorAll('[data-dc-conn-auto-chip]').forEach(function (chip) {
+			var cid = parseInt(chip.getAttribute('data-collection-id') || '0', 10);
+			if (!cid) return;
+			postAuto('list_rules_for_collection', { collection_id: cid }).then(function (payload) {
+				var data = payloadData(payload);
+				var rules = data.rules || [];
+				var label = t('Нет правил');
+				if (data.conflict || rules.length > 1) {
+					label = t('Конфликт правил');
+				} else if (rules.length === 1) {
+					label = rules[0].pattern_type || rules[0].rule_name || label;
+				}
+				chip.textContent = label;
+				chip.classList.toggle('alert', !!(data.conflict || rules.length > 1));
+			}).catch(function () {
+				chip.textContent = '—';
+			});
+		});
+	};
+
+	ConnectionsUI.prototype.automateCollection = function (collectionId) {
+		var self = this;
+		if (!collectionId || !this.automationEnabled) return;
+
+		postAuto('list_rules_for_collection', { collection_id: collectionId }).then(function (payload) {
+			var data = payloadData(payload);
+			var rules = data.rules || [];
+			if (!rules.length) {
+				if (Metro && typeof Metro.dialogCreate === 'function') {
+					Metro.dialogCreate({
+						title: t('Automate'),
+						content: '<p>' + t('Нет активных правил для категории этой сборки.') + '</p>',
+						actions: [{ caption: t('OK'), cls: 'js-dialog-close primary' }],
+					});
+				}
+				return;
+			}
+
+			var ruleOptions = rules.map(function (r, idx) {
+				return '<option value="' + r.id + '"' + (idx === 0 ? ' selected' : '') + '>' +
+					(r.rule_name || r.pattern_type) + ' (' + r.pattern_type + ')</option>';
+			}).join('');
+
+			var html =
+				'<div class="mb-2"><label class="text-small">' + t('Правило') + '</label>' +
+				'<select class="metro-input w-100" data-dc-auto-rule>' + ruleOptions + '</select></div>' +
+				'<div><label class="text-small">' + t('Режим') + '</label>' +
+				'<select class="metro-input w-100" data-dc-auto-mode>' +
+				'<option value="preserve">' + t('Preserve (сохранить ручные типы)') + '</option>' +
+				'<option value="full_reset">' + t('Full reset (перезаписать всё)') + '</option>' +
+				'</select></div>';
+
+			if (!Metro || typeof Metro.dialogCreate !== 'function') {
+				return;
+			}
+
+			var dlg = Metro.dialogCreate({
+				title: t('⚡ Automate'),
+				content: html,
+				actions: [
+					{ caption: t('Отмена'), cls: 'js-dialog-close' },
+					{
+						caption: t('Запустить'),
+						cls: 'js-dialog-close primary',
+						onclick: function () {
+							var node = dialogNode(dlg);
+							var ruleSel = node ? node.querySelector('[data-dc-auto-rule]') : null;
+							var modeSel = node ? node.querySelector('[data-dc-auto-mode]') : null;
+							var ruleId = ruleSel ? parseInt(ruleSel.value, 10) : (rules[0] && rules[0].id) || 0;
+							var mode = modeSel ? modeSel.value : 'preserve';
+							postAuto('run_automation', {
+								collection_id: collectionId,
+								rule_id: ruleId,
+								mode: mode,
+							}).then(function () {
+								return self.reload();
+							});
+						},
+					},
+				],
+			});
+		});
+	};
+	/* DevCraft ConnectionsAutomation: end */
+
 	function CollectionTypesUI(root) {
 		this.root = root;
+		this.automationEnabled = root.getAttribute('data-automation-enabled') === '1';
 		this.bind();
 	}
 
 	CollectionTypesUI.prototype.bind = function () {
+		var self = this;
 		var add = this.root.querySelector('[data-dc-conn-ctype-add]');
 		if (add) {
 			add.addEventListener('click', function () {
@@ -982,6 +1200,7 @@
 		this.root.addEventListener('click', function (e) {
 			var rename = e.target.closest('[data-dc-conn-ctype-rename]');
 			var slugBtn = e.target.closest('[data-dc-conn-ctype-slug]');
+			var autoBtn = e.target.closest('[data-dc-conn-ctype-auto-rules]');
 			var del = e.target.closest('[data-dc-conn-ctype-delete]');
 			var row = e.target.closest('[data-id]');
 			if (!row) return;
@@ -1010,6 +1229,9 @@
 					});
 				});
 			}
+			if (autoBtn && self.automationEnabled) {
+				self.openRulesDialog(id, row);
+			}
 			if (del) {
 				confirmDialog(
 					t('Удалить категорию'),
@@ -1024,6 +1246,226 @@
 		});
 	};
 
+	CollectionTypesUI.prototype.openRulesDialog = function (categoryId, row) {
+		var nameEl = row ? row.querySelector('.dc-conn-ctype-name') : null;
+		var title = (nameEl ? nameEl.textContent.trim() : '') || ('#' + categoryId);
+		var editBase = '?mod=' + encodeURIComponent((document.body && document.body.dataset.mod) || 'dle_connections')
+			+ '&action=rule_edit&category_id=' + encodeURIComponent(String(categoryId));
+		var html =
+			'<div data-dc-conn-auto-rules data-category-id="' + categoryId + '">' +
+			'<p class="text-small mb-2">' + t('Правила автоматизации для категории') + ': <strong>' + title + '</strong></p>' +
+			'<div class="mb-2"><button type="button" class="button small primary" data-dc-auto-add-linear">' +
+			t('Добавить линейное') + '</button> ' +
+			'<a class="button small" href="' + editBase + '&id=0">' + t('Добавить правило') + '</a></div>' +
+			'<div data-dc-auto-list class="text-small">' + t('Загрузка…') + '</div></div>';
+
+		if (!Metro || typeof Metro.dialogCreate !== 'function') return;
+
+		var dlg = Metro.dialogCreate({
+			title: t('Правила авто'),
+			content: html,
+			width: 560,
+			actions: [{ caption: t('Закрыть'), cls: 'js-dialog-close primary' }],
+		});
+
+		var node = dialogNode(dlg);
+		if (!node) return;
+
+		function reloadList() {
+			var box = node.querySelector('[data-dc-auto-list]');
+			if (!box) return;
+			postAuto('auto_rules', { action: 'list', category_id: categoryId }).then(function (payload) {
+				var items = (payloadData(payload).items) || [];
+				if (!items.length) {
+					box.innerHTML = '<p class="text-muted">' + t('Правил пока нет') + '</p>';
+					return;
+				}
+				box.innerHTML = items.map(function (r) {
+					return '<div class="d-flex flex-justify-between flex-align-center mb-1" data-rule-id="' + r.id + '">' +
+						'<span>' + (r.rule_name || '') + ' · ' + r.pattern_type +
+						(r.is_active ? '' : ' (' + t('выкл') + ')') + '</span>' +
+						'<span>' +
+						'<a class="button small" href="' + editBase + '&id=' + r.id + '">' + t('Изменить') + '</a> ' +
+						'<button type="button" class="button small" data-dc-auto-toggle data-active="' + (r.is_active ? '1' : '0') + '">' +
+						(r.is_active ? t('Выкл') : t('Вкл')) + '</button> ' +
+						'<button type="button" class="button alert small" data-dc-auto-del">' + t('Удалить') + '</button>' +
+						'</span></div>';
+				}).join('');
+			});
+		}
+
+		reloadList();
+
+		node.addEventListener('click', function (e) {
+			if (e.target.closest('[data-dc-auto-add-linear]')) {
+				askText(t('Линейное правило'), t('Название'), t('Линейная')).then(function (name) {
+					if (!name) return;
+					return postAuto('auto_rules', {
+						action: 'create_linear',
+						category_id: categoryId,
+						rule_name: name,
+					}).then(function (payload) {
+						var rule = (payloadData(payload).rule) || null;
+						reloadList();
+						if (rule && rule.id && Metro && typeof Metro.dialogCreate === 'function') {
+							Metro.dialogCreate({
+								title: t('Линейное правило создано'),
+								content: '<p>' + t('Открыть редактор условий?') + '</p>',
+								actions: [
+									{ caption: t('Позже'), cls: 'js-dialog-close' },
+									{
+										caption: t('Открыть'),
+										cls: 'js-dialog-close primary',
+										onclick: function () {
+											window.location.href = editBase + '&id=' + rule.id;
+										},
+									},
+								],
+							});
+						}
+					});
+				});
+			}
+			var rowEl = e.target.closest('[data-rule-id]');
+			if (!rowEl) return;
+			var rid = parseInt(rowEl.getAttribute('data-rule-id'), 10);
+			if (e.target.closest('[data-dc-auto-del]')) {
+				confirmDialog(t('Удалить правило'), t('Удалить правило и его условия?')).then(function (ok) {
+					if (!ok) return;
+					return postAuto('auto_rules', { action: 'delete', id: rid }).then(reloadList);
+				});
+			}
+			var toggleBtn = e.target.closest('[data-dc-auto-toggle]');
+			if (toggleBtn) {
+				var currentlyOn = toggleBtn.getAttribute('data-active') === '1';
+				postAuto('auto_rules', {
+					action: 'set_active',
+					id: rid,
+					is_active: currentlyOn ? 0 : 1,
+				}).then(reloadList);
+			}
+		});
+	};
+
+	/**
+	 * Панель правил на странице Rules / embed (`data-dc-conn-auto-rules`).
+	 * Диалог категорий использует отдельную разметку — см. openRulesDialog.
+	 */
+	function AutoRulesPanel(root) {
+		this.root = root;
+		this.categoryId = parseInt(root.getAttribute('data-category-id') || '0', 10);
+		if (!this.categoryId) return;
+		this.bind();
+		this.reloadList();
+	}
+
+	AutoRulesPanel.prototype.bind = function () {
+		var self = this;
+		this.root.addEventListener('click', function (e) {
+			if (e.target.closest('[data-dc-conn-auto-rule-add-linear]')) {
+				askText(t('Линейное правило'), t('Название'), t('Линейная')).then(function (name) {
+					if (!name) return;
+					return postAuto('auto_rules', {
+						action: 'create_linear',
+						category_id: self.categoryId,
+						rule_name: name,
+					}).then(function (payload) {
+						self.reloadList();
+						var rule = (payloadData(payload).rule) || null;
+						if (rule && rule.id && Metro && typeof Metro.dialogCreate === 'function') {
+							Metro.dialogCreate({
+								title: t('Линейное правило создано'),
+								content: '<p>' + t('Открыть редактор условий?') + '</p>',
+								actions: [
+									{ caption: t('Позже'), cls: 'js-dialog-close' },
+									{
+										caption: t('Открыть'),
+										cls: 'js-dialog-close primary',
+										onclick: function () {
+											window.location.href = self.editorHref(rule.id);
+										},
+									},
+								],
+							});
+						}
+					});
+				});
+				return;
+			}
+			if (e.target.closest('[data-dc-conn-auto-rule-add]')) {
+				window.location.href = self.editorHref(0);
+				return;
+			}
+			var rowEl = e.target.closest('[data-rule-id]');
+			if (!rowEl) return;
+			var rid = parseInt(rowEl.getAttribute('data-rule-id'), 10);
+			if (e.target.closest('[data-dc-conn-auto-rule-edit]')) {
+				window.location.href = self.editorHref(rid);
+				return;
+			}
+			if (e.target.closest('[data-dc-conn-auto-rule-del]')) {
+				confirmDialog(t('Удалить правило'), t('Удалить правило и его условия?')).then(function (ok) {
+					if (!ok) return;
+					return postAuto('auto_rules', { action: 'delete', id: rid }).then(function () {
+						self.reloadList();
+					});
+				});
+				return;
+			}
+			var toggleBtn = e.target.closest('[data-dc-conn-auto-rule-toggle]');
+			if (toggleBtn) {
+				var currentlyOn = toggleBtn.getAttribute('data-active') === '1';
+				postAuto('auto_rules', {
+					action: 'set_active',
+					id: rid,
+					is_active: currentlyOn ? 0 : 1,
+				}).then(function () {
+					self.reloadList();
+				});
+			}
+		});
+	};
+
+	AutoRulesPanel.prototype.editorHref = function (ruleId) {
+		return '?mod=' + encodeURIComponent((document.body && document.body.dataset.mod) || 'dle_connections')
+			+ '&action=rule_edit'
+			+ '&category_id=' + encodeURIComponent(String(this.categoryId))
+			+ '&id=' + encodeURIComponent(String(ruleId || 0));
+	};
+
+	AutoRulesPanel.prototype.reloadList = function () {
+		var tbody = this.root.querySelector('[data-dc-conn-auto-rule-list]');
+		if (!tbody) return;
+		var self = this;
+		tbody.innerHTML = '<tr><td colspan="4">' + t('Загрузка…') + '</td></tr>';
+		postAuto('auto_rules', { action: 'list', category_id: this.categoryId }).then(function (payload) {
+			var items = (payloadData(payload).items) || [];
+			if (!items.length) {
+				tbody.innerHTML =
+					'<tr data-dc-conn-auto-rule-empty><td colspan="4">' + t('Правил пока нет') + '</td></tr>';
+				return;
+			}
+			tbody.innerHTML = items.map(function (r) {
+				var active = !!r.is_active;
+				return '<tr data-rule-id="' + r.id + '">' +
+					'<td>' + (r.rule_name || '') + '</td>' +
+					'<td>' + (r.pattern_type || '') + '</td>' +
+					'<td>' + (active ? t('Да') : t('Нет')) + '</td>' +
+					'<td>' +
+					'<a class="button small" href="' + self.editorHref(r.id) + '" data-dc-conn-auto-rule-edit>' +
+					t('Изменить') + '</a> ' +
+					'<button type="button" class="button small" data-dc-conn-auto-rule-toggle data-active="' +
+					(active ? '1' : '0') + '">' + (active ? t('Выкл') : t('Вкл')) + '</button> ' +
+					'<button type="button" class="button alert small" data-dc-conn-auto-rule-del>' +
+					t('Удалить') + '</button>' +
+					'</td></tr>';
+			}).join('');
+		}).catch(function () {
+			tbody.innerHTML =
+				'<tr><td colspan="4" class="fg-red">' + t('Не удалось загрузить правила') + '</td></tr>';
+		});
+	};
+
 	function boot() {
 		document.querySelectorAll('#dc-conn-dashboard').forEach(function (el) {
 			new ConnectionsUI(el);
@@ -1033,6 +1475,11 @@
 		});
 		document.querySelectorAll('[data-dc-conn-ctype-page]').forEach(function (el) {
 			new CollectionTypesUI(el);
+		});
+		document.querySelectorAll('[data-dc-conn-auto-rules]').forEach(function (el) {
+			if (el.getAttribute('data-dc-auto-bound') === '1') return;
+			el.setAttribute('data-dc-auto-bound', '1');
+			new AutoRulesPanel(el);
 		});
 	}
 

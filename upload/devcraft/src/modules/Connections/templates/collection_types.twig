@@ -1,4 +1,7 @@
-<div id="dc-conn-collection-types" data-dc-conn-ctype-page="1" data-assets-base="{{ assets_base }}">
+<div id="dc-conn-collection-types"
+	 data-dc-conn-ctype-page="1"
+	 data-assets-base="{{ assets_base }}"
+	 data-automation-enabled="{{ automation_enabled|default(false) ? '1' : '0' }}">
 	<div class="d-flex flex-align-center flex-justify-between mb-3">
 		<div>
 			<h2 class="mb-0">{{ page_title|default('Категории сборок'|trans) }}</h2>
@@ -54,6 +57,13 @@
 						<button type="button" class="button small" data-dc-conn-ctype-slug>
 							{{ 'Slug'|trans }}
 						</button>
+						{# DevCraft ConnectionsAutomation: start #}
+						{% if automation_enabled|default(false) %}
+							<button type="button" class="button small" data-dc-conn-ctype-auto-rules>
+								{{ 'Правила авто'|trans }}
+							</button>
+						{% endif %}
+						{# DevCraft ConnectionsAutomation: end #}
 						<button type="button" class="button alert small" data-dc-conn-ctype-delete>
 							{{ 'Удалить'|trans }}
 						</button>

@@ -49,11 +49,16 @@ final class TreeViewService {
 	 *     items: list<array<string, mixed>>
 	 * }> $blocks
 	 */
-	public function renderNewsMemberships(array $blocks, ?string $assetsBase = null): string {
+	public function renderNewsMemberships(
+		array $blocks,
+		?string $assetsBase = null,
+		bool $automationEnabled = false,
+	): string {
 		return Application::instance()->twig()->render('@connections/partials/news_form_memberships.twig', [
 			'blocks'              => $blocks,
 			'assets_base'         => $assetsBase ?? $this->assetsBase(),
 			'admin_edit_news_url' => $this->adminEditNewsUrlTemplate(),
+			'automation_enabled'  => $automationEnabled,
 		]);
 	}
 
