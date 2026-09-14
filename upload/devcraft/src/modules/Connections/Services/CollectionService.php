@@ -65,6 +65,18 @@ final class CollectionService {
 		return $title;
 	}
 
+	/**
+	 * Пишет category id и саму категорию в связь Cycle.
+	 * Без объекта категории ORM откатывает type_id (обратная HasMany).
+	 */
+	private function bindCollectionType(ConnectionCollection $collection, int $typeId): void {
+		$normalized = (new CollectionTypeService())->normalizeTypeId($typeId);
+		$collection->type_id = $normalized;
+		$collection->collectionType = $normalized > 0
+			? (new CollectionTypeService())->repo()->findOneById($normalized)
+			: null;
+	}
+
 	public function create(
 		string $title,
 		?string $description = null,
@@ -76,7 +88,7 @@ final class CollectionService {
 		$collection->description   = $description !== null && trim($description) !== ''
 			? trim($description)
 			: null;
-		$collection->type_id       = (new CollectionTypeService())->normalizeTypeId($typeId);
+		$this->bindCollectionType($collection, $typeId);
 		$collection->is_sequential = $isSequential;
 		$collection->sort_order    = $this->collectionsRepo()->nextSortOrder();
 		$this->collectionsRepo()->saveEntity($collection);
@@ -97,7 +109,7 @@ final class CollectionService {
 			: null;
 
 		if($typeId !== null) {
-			$collection->type_id = (new CollectionTypeService())->normalizeTypeId($typeId);
+			$this->bindCollectionType($collection, $typeId);
 		}
 
 		if($isSequential !== null) {
@@ -122,7 +134,7 @@ final class CollectionService {
 				continue;
 			}
 
-			$collection->type_id = 0;
+			$this->bindCollectionType($collection, 0);
 			$this->collectionsRepo()->saveEntity($collection);
 		}
 	}

@@ -46,7 +46,7 @@ class ConnectionPairRelation extends AbstractEntity {
 	#[Column(type: 'string', size: 100, default: '')]
 	public string $relation_type = '';
 
-	#[Column(type: 'text', default: '')]
+	#[Column(type: 'text')]
 	public string $comment = '';
 
 	/**

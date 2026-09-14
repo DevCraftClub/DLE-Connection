@@ -40,6 +40,7 @@ $builder = ModuleManifestBuilder::create()
 			])
 	)
 	->changelog(require DLEPlugins::Check(__DIR__ . '/changelog.data.php'))
+		// siteAssets не объявлен: Public JS только для админки; глобальная оболочка — через Admin {devcraft*} / siteAssets при появлении theme-global файлов.
 	->assets(
 		ModuleAssetsBuilder::create()
 			->js('connections_automation.js')

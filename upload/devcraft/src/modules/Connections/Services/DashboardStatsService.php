@@ -10,7 +10,6 @@ use DevCraft\Modules\Connections\Models\ConnectionCollectionType;
 use DevCraft\Modules\Connections\Models\ConnectionItem;
 use DevCraft\Modules\Connections\Models\ConnectionPairRelation;
 use DevCraft\Modules\Connections\Models\ConnectionRelationType;
-use DevCraft\Modules\Connections\Support\AutomationHostBridge;
 
 /**
  * Сводка счётчиков для панели Connections.
@@ -61,22 +60,24 @@ final class DashboardStatsService {
 			],
 		];
 
-		if(AutomationHostBridge::isEnabled()) {
-			$ruleClass = '\\DevCraft\\Modules\\ConnectionsAutomation\\Models\\ConnectionAutoRule';
+		$ruleClass = '\\DevCraft\\Modules\\ConnectionsAutomation\\Models\\ConnectionAutoRule';
 
-			if(class_exists($ruleClass)) {
-				try {
-					$cards[] = [
-						'key'   => 'auto_rules',
-						'label' => __('Правила авто'),
-						'value' => $db->count($ruleClass),
-						'icon'  => 'mif-magic-wand',
-						'url'   => '?mod=dle_connections&action=rules',
-					];
-				} catch(\Throwable) {
-					// таблица ещё не создана — пропускаем карточку
-				}
+		if(class_exists($ruleClass)) {
+			$autoCount = 0;
+
+			try {
+				$autoCount = $db->count($ruleClass);
+			} catch(\Throwable) {
+				// таблица/схема ещё не готова — карточку всё равно показываем
 			}
+
+			$cards[] = [
+				'key'   => 'auto_rules',
+				'label' => __('Правила авто'),
+				'value' => $autoCount,
+				'icon'  => 'mif-magic-wand',
+				'url'   => '?mod=dle_connections&action=rules',
+			];
 		}
 
 		return $cards;

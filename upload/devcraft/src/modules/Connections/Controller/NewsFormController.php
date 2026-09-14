@@ -14,8 +14,8 @@ use DevCraft\Modules\Connections\Services\TreeViewService;
 use DevCraft\Modules\Connections\Support\AutomationHostBridge;
 
 /**
- * Рендер Twig-виджета связей в форме новости админки DLE (черновик).
- * UI: jQuery + application.js (DLEprompt/DLEconfirm) + jqueryui (DLEPush); без dc_public/Metro.
+ * Рендер Twig-виджета связей в форме новости (админка и публичное добавление).
+ * UI: jQuery + application.js (DLEprompt/DLEconfirm) + jqueryui (DLEPush); без Metro.
  */
 final class NewsFormController {
 

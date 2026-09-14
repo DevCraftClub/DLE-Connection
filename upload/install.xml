@@ -155,22 +155,42 @@ if ($dc_connections_body_html !== '') {
 		</operation>
 	</file>
 	<file name="engine/modules/addnews.php">
-		<operation action="after">
-			<searchcode><![CDATA[		$tpl->set( '{header-title}', $lang['title_addnews']);]]></searchcode>
+		<operation action="before">
+			<searchcode><![CDATA[		$onload_scripts[] = <<<HTML
+function news_heartbeat() {]]></searchcode>
 			<replacecode><![CDATA[		// DevCraft Connections: start
 		try {
 			if (!defined('DEVCRAFT_BOOTSTRAPPED')) {
 				require_once DLEPlugins::Check(ROOT_DIR . '/devcraft/init.php');
 			}
 			if (defined('DEVCRAFT_BOOTSTRAPPED')) {
-				$tpl->set('{dc-connections}', (new DevCraft\Modules\Connections\Controller\AddNewsController())->render());
+				$dcConnNewsId = ($found && isset($row['id'])) ? (int) $row['id'] : 0;
+				$tpl->set('{dc-connections}', (new DevCraft\Modules\Connections\Controller\AddNewsController())->render($dcConnNewsId));
 			} else {
 				$tpl->set('{dc-connections}', '');
 			}
 		} catch (Throwable $e) {
 			$tpl->set('{dc-connections}', '');
 		}
-		// DevCraft Connections: end]]></replacecode>
+		// DevCraft Connections: end
+
+]]></replacecode>
+			<searchcount>1</searchcount>
+			<replacecount>1</replacecount>
+			<enabled>1</enabled>
+		</operation>
+		<operation action="after">
+			<searchcode><![CDATA[			$_SESSION['dp']['dp_'.md5($_POST['duplicateprotection'])] = true;]]></searchcode>
+			<replacecode><![CDATA[
+			// DevCraft Connections: start
+			try {
+				if (int) $insert_id > 0) {
+					DevCraft\Modules\Connections\Support\NewsFormSnapshotRequest::tryApplyFromPost((int) $insert_id);
+				}
+			} catch (Throwable $e) {
+				error_log('[Connections] apply after public addnews: ' . $e->getMessage());
+			}
+			// DevCraft Connections: end]]></replacecode>
 			<searchcount>1</searchcount>
 			<replacecount>1</replacecount>
 			<enabled>1</enabled>
