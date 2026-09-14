@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace DevCraft\Modules\Connections\Services;
 
+use DevCraft\Core\Support\ParseTemplateTags;
 use DevCraft\Modules\Connections\Models\ConnectionPairRelation;
 
 /**
@@ -164,6 +165,9 @@ final class PublicTreeService {
 					$item->sort_order,
 				);
 
+				$ts      = strtotime((string) $post['date']);
+				$dateIso = ($ts !== false) ? date('Y-m-d', $ts) : '';
+
 				$rowItems[] = [
 					'id'            => $item->id(),
 					'news_id'       => $item->news_id,
@@ -171,6 +175,14 @@ final class PublicTreeService {
 					'alt_name'      => $post['alt_name'],
 					'category'      => $post['category'],
 					'date'          => $post['date'],
+					'date_iso'      => $dateIso,
+					'full_link'     => ParseTemplateTags::fullLink([
+						'id'       => $item->news_id,
+						'title'    => $post['title'],
+						'alt_name' => $post['alt_name'],
+						'category' => $post['category'],
+						'date'     => $post['date'],
+					]),
 					'relation_type' => $resolved['relation_type'],
 					'comment'       => $resolved['comment'],
 				];

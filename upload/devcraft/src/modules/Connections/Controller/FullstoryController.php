@@ -77,17 +77,20 @@ final class FullstoryController {
 					$tpl->load_template($base . 'item.tpl');
 					$tpl->set('{title}', htmlspecialchars((string) $item['title'], ENT_QUOTES, 'UTF-8'));
 					$tpl->set('{news-id}', (string) (int) $item['news_id']);
+					$tpl->set('{full-link}', htmlspecialchars((string) ($item['full_link'] ?? ''), ENT_QUOTES, 'UTF-8'));
 					$tpl->set('{relation-type}', htmlspecialchars((string) $item['relation_type'], ENT_QUOTES, 'UTF-8'));
 					$tpl->set('{comment}', htmlspecialchars((string) ($item['comment'] ?? ''), ENT_QUOTES, 'UTF-8'));
 					$tpl->set('{alt-name}', htmlspecialchars((string) $item['alt_name'], ENT_QUOTES, 'UTF-8'));
 					$tpl->set('{category}', htmlspecialchars((string) $item['category'], ENT_QUOTES, 'UTF-8'));
 					$tpl->set('{date}', htmlspecialchars((string) $item['date'], ENT_QUOTES, 'UTF-8'));
+					$tpl->set('{date-iso}', htmlspecialchars((string) ($item['date_iso'] ?? ''), ENT_QUOTES, 'UTF-8'));
 					$tpl->compile('dc_conn_item', true);
 					$collectionItems .= (string) ($tpl->result['dc_conn_item'] ?? '');
 				}
 
 				$tpl->result['dc_conn_list'] = '';
 				$tpl->load_template($base . 'list.tpl');
+				$tpl->set('{collection-id}', (string) (int) ($collection['id'] ?? 0));
 				$tpl->set('{collection-title}', htmlspecialchars((string) $collection['title'], ENT_QUOTES, 'UTF-8'));
 				$tpl->set(
 					'{collection-description}',
