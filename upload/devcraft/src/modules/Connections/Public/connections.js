@@ -2,7 +2,7 @@
 	'use strict';
 
 	if (!window.DevCraft) {
-		console.error(t('[Connections] Сначала должен быть загружен DevCraft core.'));
+		// Админский скрипт: на публичной оболочке есть DevCraftPublic, не DevCraft.
 		return;
 	}
 

@@ -20,7 +20,7 @@
 	<phpenable><![CDATA[]]></phpenable>
 	<phpdisable><![CDATA[]]></phpdisable>
 	<phpdelete><![CDATA[]]></phpdelete>
-	<notice><![CDATA[<ul><li>Документация: <a href="https://readme.devcraft.club/dev/dle/connections/210.1.0/getting_started" target="_blank">readme</a></li><li>Include: <code>{include file="devcraft/src/modules/Connections/Controller/show_connections.php?news_id={news-id}"}</code></li><li>Вкладка «Связи» на add/edit новости: черновик до Save; стек <code>dc_public.js</code> + <code>connections_admin.js</code> (без Metro).</li></ul>]]></notice>
+	<notice><![CDATA[<ul><li>Документация: <a href="https://readme.devcraft.club/dev/dle/connections/210.1.0/getting_started" target="_blank">readme</a></li><li>Include: <code>{include file="devcraft/src/modules/Connections/Controller/show_connections.php?news_id={news-id}"}</code></li><li>Вкладка «Связи» на add/edit новости: черновик до Save; стек <code>dc_public.js</code> + <code>connections_admin.js</code> (без Metro).</li><li>Тема Air: шаблоны в <code>templates/Air/devcraft/connections/</code>. Глобальные стили и скрипты оболочки — через <code>siteAssets</code> и теги <code>{devcraft-header}</code> / <code>{devcraft-scripts}</code> в <code>main.tpl</code> (не вшивать в <code>styles.css</code>). Старый патч темы в пакете может ещё быть; новые стили добавляйте только через <code>siteAssets</code>.</li></ul>]]></notice>
 	<file name="engine/inc/addnews.php">
 		<operation action="before">
 			<searchcode><![CDATA[echo <<<HTML
@@ -173,7 +173,7 @@ function news_heartbeat() {]]></searchcode>
 			<replacecode><![CDATA[
 			// DevCraft Connections: start
 			try {
-				if (int) $insert_id > 0) {
+				if ((int) $insert_id > 0) {
 					DevCraft\Modules\Connections\Support\NewsFormSnapshotRequest::tryApplyFromPost((int) $insert_id);
 				}
 			} catch (Throwable $e) {

@@ -174,7 +174,7 @@ final class PublicTreeService {
 					'title'         => $post['title'],
 					'alt_name'      => $post['alt_name'],
 					'category'      => $post['category'],
-					'date'          => $post['date'],
+					'date'          => $dateDisplay,
 					'date_iso'      => $dateIso,
 					'full_link'     => ParseTemplateTags::fullLink([
 						'id'       => $item->news_id,

@@ -7,7 +7,6 @@ use DevCraft\Types\ModuleManifest;
 use DevCraft\Builders\ModuleManifestBuilder;
 use DevCraft\Builders\ModuleAjaxConfigBuilder;
 use DevCraft\Builders\ModuleAssetsBuilder;
-use DevCraft\Builders\ModuleSiteAssetsBuilder;
 use DevCraft\Modules\Connections\ConnectionsIdentity;
 use DevCraft\Modules\Connections\Pages\ChangelogPage;
 use DevCraft\Modules\Connections\Pages\DashboardPage;
@@ -72,10 +71,5 @@ return ModuleManifestBuilder::create()
 		ModuleAssetsBuilder::create()
 			->js(['connections.js', 'connections_admin.js'])
 			->css(['connections.css', 'connections_admin.css'])
-	)
-	->siteAssets(
-		ModuleSiteAssetsBuilder::create()
-			->js('connections.js')
-			->css('connections.css')
 	)
 	->build(__DIR__);
