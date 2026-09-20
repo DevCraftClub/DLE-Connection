@@ -165,8 +165,17 @@ final class PublicTreeService {
 					$item->sort_order,
 				);
 
-				$ts      = strtotime((string) $post['date']);
-				$dateIso = ($ts !== false) ? date('Y-m-d', $ts) : '';
+				$ts          = strtotime((string) $post['date']);
+				$dateIso     = ($ts !== false) ? date('Y-m-d', $ts) : '';
+				$dateDisplay = (string) $post['date'];
+
+				if($ts !== false) {
+					global $config;
+					$fmt = (string) ($config['timestamp_active'] ?? 'j F Y H:i');
+					$dateDisplay = function_exists('langdate')
+						? (string) langdate($fmt, $ts)
+						: date('d.m.Y H:i', $ts);
+				}
 
 				$rowItems[] = [
 					'id'            => $item->id(),
