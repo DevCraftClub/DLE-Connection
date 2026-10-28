@@ -1,0 +1,13 @@
+{% if tree is empty %}
+	<div class="dc-conn-empty">{{ 'Сборок пока нет'|trans }}</div>
+{% else %}
+	<ul data-role="treeview" class="dc-conn-treeview" data-show-child-count="false">
+		{% for col in tree %}
+			{% include '@connections/partials/tree_collection.twig' with {
+				col: col,
+				assets_base: assets_base,
+				admin_edit_news_url: admin_edit_news_url|default('')
+			} only %}
+		{% endfor %}
+	</ul>
+{% endif %}

@@ -1,0 +1,24 @@
+{# Шаблоны диалогов: JS клонирует content, опции наполняет через DOM API. #}
+<template id="dc-conn-tpl-ask-text">
+	<label class="d-block mb-1" data-dc-conn-label></label>
+	<input type="text" id="dc-conn-ask-text" class="metro-input" style="width:100%" value="">
+</template>
+
+<template id="dc-conn-tpl-confirm">
+	<p data-dc-conn-message></p>
+</template>
+
+<template id="dc-conn-tpl-select-relation">
+	<label class="d-block mb-1" data-dc-conn-label></label>
+	<select id="dc-conn-select-relation" class="metro-input" style="width:100%"></select>
+</template>
+
+<template id="dc-conn-tpl-select-collection">
+	<label class="d-block mb-1" data-dc-conn-label></label>
+	<select id="dc-conn-select-collection" class="metro-input" style="width:100%"></select>
+</template>
+
+<template id="dc-conn-tpl-search-news">
+	<input type="search" id="dc-conn-news-q" class="metro-input mb-2" style="width:100%" placeholder="{{ 'Название или ID'|trans }}">
+	<div id="dc-conn-news-results" class="list-group" style="max-height:240px;overflow:auto"></div>
+</template>

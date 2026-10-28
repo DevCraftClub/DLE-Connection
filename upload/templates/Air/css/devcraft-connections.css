@@ -1,0 +1,164 @@
+/* Connections — публичные сборки (язык темы Air) */
+.dc-connections-collection { margin: var(--sp-6) 0; }
+.dc-connections-collection .dc-connections-head { margin-bottom: var(--sp-4); }
+.dc-connections-items {
+	display: grid;
+	gap: var(--sp-3);
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+.dc-connections-item {
+	padding: var(--sp-4);
+	border-radius: var(--radius);
+	background: var(--surface);
+	box-shadow: var(--shadow-tiny);
+}
+.dc-connections-item:hover { box-shadow: var(--shadow-soft); }
+.dc-connections-item__body { display: grid; gap: var(--sp-2); min-width: 0; }
+.dc-connections-link {
+	font-size: var(--fs-sm);
+	font-weight: 600;
+	line-height: 1.35;
+	letter-spacing: -.01em;
+}
+.dc-connections-link:hover { color: var(--accent-strong); }
+.dc-connections-item__meta {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: var(--sp-2);
+	color: var(--muted);
+	font-size: var(--fs-meta);
+}
+.dc-connections-item__meta .chips { font-size: var(--fs-meta); }
+.dc-connections-comment {
+	margin: 0;
+	color: var(--muted);
+	font-size: var(--fs-meta);
+	line-height: 1.45;
+}
+.dc-connections-collection--chronology {
+	padding: var(--sp-5);
+	border-radius: var(--radius);
+	background: var(--surface);
+	box-shadow: var(--shadow-soft);
+}
+.dc-connections-timeline {
+	margin: 0;
+	padding: 0 0 0 var(--sp-4);
+	border-left: var(--hair) solid var(--line);
+	list-style: none;
+	display: grid;
+	gap: var(--sp-4);
+}
+.dc-connections-item--timeline {
+	position: relative;
+	padding: 0 0 0 var(--sp-4);
+	background: transparent;
+	box-shadow: none;
+	display: grid;
+	gap: var(--sp-2);
+}
+.dc-connections-item--timeline:hover { box-shadow: none; }
+.dc-connections-item--timeline::before {
+	content: "";
+	position: absolute;
+	left: calc(var(--sp-4) * -1 - 0.25em);
+	top: 0.45em;
+	width: 0.5em;
+	height: 0.5em;
+	border-radius: 50%;
+	background: var(--accent-strong);
+}
+
+/* Connections — виджет на форме добавления */
+.dc-connections-addnews {
+	margin: var(--sp-2) 0;
+	padding: var(--sp-4);
+	border-radius: var(--r-lg);
+	background: var(--surface-soft);
+}
+.dc-connections-addnews > summary {
+	display: inline-flex;
+	list-style: none;
+	cursor: pointer;
+	font-weight: 600;
+	font-size: var(--fs-sm);
+}
+.dc-connections-addnews > summary::-webkit-details-marker { display: none; }
+.dc-connections-addnews__body { margin-top: var(--sp-4); }
+.dc-connections-addnews .dc-conn-nf-hint {
+	margin: 0 0 var(--sp-3);
+	color: var(--muted);
+	font-size: var(--fs-meta);
+}
+.dc-connections-addnews .dc-conn-nf-toolbar { margin-bottom: var(--sp-3); }
+.dc-connections-addnews .dc-conn-nf-toolbar .btn,
+.dc-connections-addnews .dc-conn-nf-foot .btn,
+.dc-connections-addnews .dc-conn-nf-actions .btn {
+	display: inline-flex;
+	align-items: center;
+	gap: var(--sp-1);
+	padding: var(--sp-2) var(--sp-3);
+	border-radius: var(--r-md, 8px);
+	border: var(--hair) solid var(--line);
+	background: var(--surface);
+	color: inherit;
+	font-size: var(--fs-meta);
+	font-weight: 600;
+	cursor: pointer;
+}
+.dc-connections-addnews .dc-conn-nf-toolbar .btn:hover,
+.dc-connections-addnews .dc-conn-nf-foot .btn:hover {
+	box-shadow: var(--shadow-tiny);
+}
+.dc-connections-addnews .dc-conn-nf-toolbar [data-dc-conn-add-new].btn {
+	min-height: var(--control-h);
+	padding: 0 calc(var(--app-em)*1.25);
+	border: 0;
+	border-radius: var(--r-lg);
+	background: var(--accent-strong);
+	color: var(--accent-ink) !important;
+	font-size: var(--fs-ui);
+	font-weight: 600;
+	box-shadow: 0 var(--sp-2) var(--sp-5) rgba(73,108,139,.18);
+}
+.dc-connections-addnews .dc-conn-nf-toolbar [data-dc-conn-add-new].btn:hover {
+	background: var(--accent);
+	transform: translateY(calc(var(--app-em)*-0.0625));
+	box-shadow: 0 var(--sp-2) var(--sp-5) rgba(73,108,139,.18);
+}
+.dc-connections-addnews .dc-conn-nf-toolbar [data-dc-conn-add-new] img {
+	width: 14px;
+	height: 14px;
+	margin: 0;
+	vertical-align: middle;
+	filter: brightness(0) invert(1);
+}
+[data-theme="dark"] .dc-connections-addnews .dc-conn-nf-toolbar [data-dc-conn-add-new] img {
+	filter: brightness(0);
+}
+.dc-connections-addnews .dc-conn-nf-collection {
+	margin-bottom: var(--sp-3);
+	padding: var(--sp-3);
+	border-radius: var(--r-lg);
+	background: var(--surface);
+	box-shadow: var(--shadow-tiny);
+}
+.dc-connections-addnews .dc-conn-nf-head {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: var(--sp-2);
+	margin-bottom: var(--sp-2);
+}
+.dc-connections-addnews .dc-conn-nf-title { font-weight: 600; font-size: var(--fs-sm); }
+.dc-connections-addnews .dc-conn-nf-item {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: var(--sp-2);
+	padding: var(--sp-2) 0;
+	border-top: var(--hair) solid var(--line);
+}

@@ -1,0 +1,23 @@
+<div class="dc-conn-news-form"
+	 id="dc-conn-news-form"
+	 data-news-id="{{ news_id|default(0) }}"
+	 data-assets-base="{{ assets_base }}"
+	 data-dc-conn-embed="1"
+	 data-ajax-mod="dle_connections"
+	 data-automation-enabled="{{ automation_enabled|default(false) ? '1' : '0' }}"
+	 data-dc-conn-snapshot='{{ snapshot|json_encode|e('html_attr') }}'
+	 data-dc-conn-collections='{{ collections|json_encode|e('html_attr') }}'
+	 data-dc-conn-trees='{{ trees_by_id|json_encode|e('html_attr') }}'
+	 data-dc-conn-relation-types='{{ relation_types|json_encode|e('html_attr') }}'
+	 data-dc-conn-collection-types='{{ collection_types|default([])|json_encode|e('html_attr') }}'
+	 data-admin-edit-news-url="{{ admin_edit_news_url|default('')|e('html_attr') }}">
+	<input type="hidden" name="dc_connections_snapshot" id="dc_connections_snapshot" value="{{ snapshot|json_encode|e('html_attr') }}">
+	<p class="dc-conn-nf-hint">{{ 'Изменения применятся только после сохранения новости.'|trans }}</p>
+	<div class="dc-conn-nf-toolbar">
+		<button type="button" class="btn bg-slate-600 btn-sm btn-raised" data-dc-conn-add-new>
+			<img src="{{ assets_base }}/add-collection.svg" alt="" width="14" height="14" class="position-left">{{ 'Добавить сборку'|trans }}
+		</button>
+	</div>
+	<div class="dc-conn-nf-list" data-dc-conn-memberships>{{ memberships_html|raw }}</div>
+	{% include '@connections/partials/news_form_templates.twig' %}
+</div>
