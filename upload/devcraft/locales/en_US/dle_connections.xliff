@@ -1,0 +1,867 @@
+<?xml version="1.0" encoding="utf-8"?>
+<xliff xmlns="urn:oasis:names:tc:xliff:document:1.2" version="1.2">
+  <file original="dle_connections.ru_RU" datatype="plaintext" source-language="ru" target-language="en">
+    <body>
+      <trans-unit id="8e07ed75d48583a55e0cfd367f5c3f72">
+        <source>Связи</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Connections</target>
+      </trans-unit>
+      <trans-unit id="64b72c153a8d20297eab35492f5d88c3">
+        <source>Категории сборок</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Build Categories</target>
+      </trans-unit>
+      <trans-unit id="adbc877af5ca776266153294f57ce2f3">
+        <source>Категории задают type_id сборки (фильтры публичного блока). Не путать с типами связей элементов.</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Categories define the assembly's type_id (public block filters). Do not confuse them with element relationship types.</target>
+      </trans-unit>
+      <trans-unit id="2ab6a96d4953b3e9d966399a515d606a">
+        <source>Добавить категорию</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Add a category</target>
+      </trans-unit>
+      <trans-unit id="9a79d3fc44291a8d503aed1e5bf03f25">
+        <source>записей</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">entries</target>
+      </trans-unit>
+      <trans-unit id="6efd63395d20a889afd822b47e385dc9">
+        <source>Поиск…</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Search…</target>
+      </trans-unit>
+      <trans-unit id="602680ed8916dcc039882172ef089256">
+        <source>Название</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Title</target>
+      </trans-unit>
+      <trans-unit id="fb3df31bf52df6c142a279ecdb6dd94c">
+        <source>Действия</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Actions</target>
+      </trans-unit>
+      <trans-unit id="e5551a6800cefbb305c4815210a95986">
+        <source>Переименовать</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Rename</target>
+      </trans-unit>
+      <trans-unit id="0c908588520b3ef787bce443fc2b507c">
+        <source>Slug</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Slug</target>
+      </trans-unit>
+      <trans-unit id="82e9e0c44ff7b54d575e2c8156d9d8dc">
+        <source>Правила авто</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Traffic Rules</target>
+      </trans-unit>
+      <trans-unit id="ed2bbfbc53d83d3ad81f7fd6485ac6e8">
+        <source>Удалить</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Delete</target>
+      </trans-unit>
+      <trans-unit id="ccefeebcb307475883f28a8f57c1ab64">
+        <source>Категорий пока нет</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">There are no categories yet</target>
+      </trans-unit>
+      <trans-unit id="0708c5b87394b531d33ea1a182d9f554">
+        <source>Типы связей</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Types of Relationships</target>
+      </trans-unit>
+      <trans-unit id="6c63e3bf95788031989d72b32dd2910c">
+        <source>Типы используются при добавлении новости в сборку.</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Types are used when adding a news item to a compilation.</target>
+      </trans-unit>
+      <trans-unit id="2c34787b9e3ac5bd1700a6c005771075">
+        <source>Добавить тип</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Add a type</target>
+      </trans-unit>
+      <trans-unit id="a6e3c186be46fab9d6290d9924bcf44d">
+        <source>Типов пока нет</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">There are no types yet</target>
+      </trans-unit>
+      <trans-unit id="1d0d91efb80ac454501a8e3350acfb27">
+        <source>Пока нет участий в сборках</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">No releases in the builds yet</target>
+      </trans-unit>
+      <trans-unit id="7df152e793f12927e74d67bb3f8e4286">
+        <source>Перетащить</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Drag</target>
+      </trans-unit>
+      <trans-unit id="a16b986b2a74e10ee1c12674164f39dd">
+        <source>Категория сборки</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Build Category</target>
+      </trans-unit>
+      <trans-unit id="acaf96bf69fc44d3e3bf9049542a5b1e">
+        <source>Без категории</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Uncategorized</target>
+      </trans-unit>
+      <trans-unit id="30ede6b2878bcf38723287fd02f0de53">
+        <source>Добавить новость</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Add a news item</target>
+      </trans-unit>
+      <trans-unit id="715386146c5db131bf7eb4a790e9d951">
+        <source>Копировать сборку</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Copy the build</target>
+      </trans-unit>
+      <trans-unit id="4447f9c4d7c1b68f8c72ce785560d163">
+        <source>Убрать из сборки</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Remove from the build</target>
+      </trans-unit>
+      <trans-unit id="9ed56d4841dbb118ee9f4fc81ea82572">
+        <source>Automate</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Automate</target>
+      </trans-unit>
+      <trans-unit id="358525c67fb0190f4711443bfdf22946">
+        <source>Automate доступен после сохранения сборки.</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Automate becomes available after you save the build.</target>
+      </trans-unit>
+      <trans-unit id="a5fb6c35c2f6dea540763d614d4d2ac2">
+        <source>Тип связи</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Connection Type</target>
+      </trans-unit>
+      <trans-unit id="8d7ae9e25c2fc07856a1406d06bfd3f4">
+        <source>Комментарий</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Comment</target>
+      </trans-unit>
+      <trans-unit id="c83202ffb2396a599c12588cc7cfcae4">
+        <source>Открыть в админке</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Open in the admin panel</target>
+      </trans-unit>
+      <trans-unit id="182fbbea99568b94debd7bdbe53f6401">
+        <source>Сменить новость</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">View another news item</target>
+      </trans-unit>
+      <trans-unit id="1705d7cb70e0c9d8820e1b03eca70f91">
+        <source>Скрыть</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Hide</target>
+      </trans-unit>
+      <trans-unit id="c2e74630cf941d571ac8e9733e2adce2">
+        <source>Копировать в другую сборку</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Copy to Another Build</target>
+      </trans-unit>
+      <trans-unit id="bfc95980634bf529e8a406db2c842b31">
+        <source>Поиск</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Search</target>
+      </trans-unit>
+      <trans-unit id="21982742632524f379053ebc6a166ce0">
+        <source>Название или ID</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Name or ID</target>
+      </trans-unit>
+      <trans-unit id="18971fe6ecf09c13d9cddd1393e70578">
+        <source>Сборок пока нет</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">There are no builds yet</target>
+      </trans-unit>
+      <trans-unit id="8767f9ec282489d3e8e29021d0967187">
+        <source>Ничего не найдено</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Nothing found</target>
+      </trans-unit>
+      <trans-unit id="3fcef4f7d6dc7af4c9cd1cfb02471bd1">
+        <source>Последовательная сборка</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Sequential Assembly</target>
+      </trans-unit>
+      <trans-unit id="5c94f20359e27bbdcbf0c52f41b01aed">
+        <source>Последовательная</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Sequential</target>
+      </trans-unit>
+      <trans-unit id="9d5fd4fd49eacdf8e269075afd72e0df">
+        <source>Статус автоматизации</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Automation Status</target>
+      </trans-unit>
+      <trans-unit id="00809fe8ae4c23cec4bacf3324880595">
+        <source>Автоматизировать пары</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Automate pairs</target>
+      </trans-unit>
+      <trans-unit id="d8a1ba409ab56b02063d2f3fac1d993b">
+        <source>Сохранить сборку</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Save the build</target>
+      </trans-unit>
+      <trans-unit id="112b141bc7e09133a8b2a57541f90166">
+        <source>Копировать</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Copy</target>
+      </trans-unit>
+      <trans-unit id="8e84cbc7780129ff56be1ed26b2eb2d3">
+        <source>контекст</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">context</target>
+      </trans-unit>
+      <trans-unit id="e2a94d6b16635d815c1d014dd6ba0904">
+        <source>Тип связи не задан</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Connection type not specified</target>
+      </trans-unit>
+      <trans-unit id="dc68804c92b6fca577d34ac95f15b6e1">
+        <source>Сделать контекстом</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Set as context</target>
+      </trans-unit>
+      <trans-unit id="74ea58b6a801f0dce4e5d34dbca034dc">
+        <source>Сохранить</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Save</target>
+      </trans-unit>
+      <trans-unit id="834b24c7963f5c6583c9f4d12cf66e1a">
+        <source>Изменения применятся только после сохранения новости.</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Changes will take effect only after the news item is saved.</target>
+      </trans-unit>
+      <trans-unit id="8ba1a55d27374b9888d3423cf09232d4">
+        <source>Добавить сборку</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Add a build</target>
+      </trans-unit>
+      <trans-unit id="e24b27ec974d6751c3730a5713ab8110">
+        <source>Сборки</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Builds</target>
+      </trans-unit>
+      <trans-unit id="cbaa756a60aeb2afcc476f772da14f95">
+        <source>Сборки связанных новостей. При создании выберите исходную новость. Перетаскивайте элементы внутри сборки.</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Related News Collections. When creating a collection, select the source news item. Drag and drop items within the collection.</target>
+      </trans-unit>
+      <trans-unit id="c6fd3c6a629b51b28c19e8495994f4ca">
+        <source>Ошибка</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Error</target>
+      </trans-unit>
+      <trans-unit id="437f86d117949a9ac60c034cb11fcfb5">
+        <source>Элемент не найден</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Element not found</target>
+      </trans-unit>
+      <trans-unit id="829ebd0a7d6f640672a88368b8a83037">
+        <source>Элемент сохранён</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">The item has been saved</target>
+      </trans-unit>
+      <trans-unit id="a8a59d2ccab9100a82dc6b4f8d9b83b5">
+        <source>Тип связи создан</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Connection type created</target>
+      </trans-unit>
+      <trans-unit id="fa575d1493d1de8a3cac52bb15da6f86">
+        <source>Неизвестное действие</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Unknown action</target>
+      </trans-unit>
+      <trans-unit id="c3bea428f0df33e0a4dd107ccea31354">
+        <source>Тип связи не найден</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Connection type not found</target>
+      </trans-unit>
+      <trans-unit id="4ea26c64ac0294d2647fac4449af79cb">
+        <source>Тип связи сохранён</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Connection type saved</target>
+      </trans-unit>
+      <trans-unit id="c1cea1415039c3d019390d8e22520ff9">
+        <source>Тип связи удалён</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Connection type removed</target>
+      </trans-unit>
+      <trans-unit id="d74564c937dfd8522b40c2c11bca1f6e">
+        <source>Порядок типов сохранён</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">The order of the types has been preserved</target>
+      </trans-unit>
+      <trans-unit id="56cfd7bd562f0451eb6bae4b0bfb5246">
+        <source>Категория создана</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Category created</target>
+      </trans-unit>
+      <trans-unit id="9125d56a81e93beba28391e98b183600">
+        <source>Категория сборки не найдена</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Build category not found</target>
+      </trans-unit>
+      <trans-unit id="0a6f84a22613e4b21507b6bd767788e5">
+        <source>Категория сохранена</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Category saved</target>
+      </trans-unit>
+      <trans-unit id="20ca46800b58fc3f03cac36097ec9753">
+        <source>Категория удалена</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Category deleted</target>
+      </trans-unit>
+      <trans-unit id="7c73739fc0fae4dbc47e057ea54b611d">
+        <source>Порядок категорий сохранён</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">The order of the categories has been preserved</target>
+      </trans-unit>
+      <trans-unit id="0ce4b952ec1df763ccdc9ab93d512795">
+        <source>Порядок элементов сохранён</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">The order of the elements has been preserved</target>
+      </trans-unit>
+      <trans-unit id="03a77a71201ffc6fa86d95dfd95a8ace">
+        <source>Сборка не найдена</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Build not found</target>
+      </trans-unit>
+      <trans-unit id="2235f76077e3f99106919ffb07bdd4fa">
+        <source>Сборка скопирована</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">The build has been copied</target>
+      </trans-unit>
+      <trans-unit id="5f3c6c0ca6f1638140a7e91d4d5e7ab6">
+        <source>Порядок сборок сохранён</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">The assembly sequence has been preserved</target>
+      </trans-unit>
+      <trans-unit id="0ddff01f1b29f5be1f2ddf6c3f1a0891">
+        <source>Элемент показан</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">The element is displayed</target>
+      </trans-unit>
+      <trans-unit id="b3f3e02ccc155775364561bac5069d00">
+        <source>Элемент скрыт</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">The element is hidden</target>
+      </trans-unit>
+      <trans-unit id="733d77cbd9c734652202ba4bf45eb580">
+        <source>Элемент удалён</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">The item has been deleted</target>
+      </trans-unit>
+      <trans-unit id="4ac6ede61de55d407b012f05467b6b14">
+        <source>Сборка удалена</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">The build has been deleted</target>
+      </trans-unit>
+      <trans-unit id="6c24af463073ef9c49bc4283d9118fc0">
+        <source>Выберите новость, от которой создаётся сборка</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Select the news item from which the build is created</target>
+      </trans-unit>
+      <trans-unit id="7b5623cb57a35bf7972d4cd49bd0f498">
+        <source>Новость не найдена</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">No news found</target>
+      </trans-unit>
+      <trans-unit id="668addeea73eb13211c665c8305403c4">
+        <source>Сборка сохранена</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">The build has been saved</target>
+      </trans-unit>
+      <trans-unit id="80dae2a9dfc9714ca2fa06ea34b2372c">
+        <source>Название типа связи не может быть пустым</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">The connection type name cannot be empty</target>
+      </trans-unit>
+      <trans-unit id="53a8805e93668a08fc0cae024a30b113">
+        <source>Название типа связи слишком длинное</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">The connection type name is too long</target>
+      </trans-unit>
+      <trans-unit id="50cc3ba6655fb448878e619efc932e78">
+        <source>Тип связи с таким именем уже есть</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">A connection with that name already exists</target>
+      </trans-unit>
+      <trans-unit id="c1d6f4bd413127266d03113bbaeaa1af">
+        <source>Некорректные параметры элемента</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Invalid element attributes</target>
+      </trans-unit>
+      <trans-unit id="fe999062517cc129d9957c7a91b3aefd">
+        <source>Новость уже есть в этой сборке</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">This feature is already included in this build</target>
+      </trans-unit>
+      <trans-unit id="3d8a5ae10c43dc16d070c25a4b251284">
+        <source>Некорректный идентификатор новости</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Invalid news ID</target>
+      </trans-unit>
+      <trans-unit id="877e95dc073ad339b3eeec7b523fd707">
+        <source>Новость уже есть в целевой сборке</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">The update is already included in the target build</target>
+      </trans-unit>
+      <trans-unit id="b0b0c12605408afd7aac1f03d4d73bf7">
+        <source>Название сборки не может быть пустым</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">The build name cannot be empty</target>
+      </trans-unit>
+      <trans-unit id="10a3ce55d5651037595e27ae9f97eb81">
+        <source>Название сборки слишком длинное</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">The build name is too long</target>
+      </trans-unit>
+      <trans-unit id="a3986f0761218107a2ec10420f32cb8c">
+        <source>копия</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">copy</target>
+      </trans-unit>
+      <trans-unit id="f7e9b5a2e0337dcff693c8595325b1bf">
+        <source>Элементы</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Elements</target>
+      </trans-unit>
+      <trans-unit id="9decffe2ad77d258d4c1eecf5b08a7b5">
+        <source>Пары связей</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Pairs of Connections</target>
+      </trans-unit>
+      <trans-unit id="6926e02be4135897ae84b36941554684">
+        <source>Категории</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Categories</target>
+      </trans-unit>
+      <trans-unit id="0f3e645546a6939b749270dfd60fe59d">
+        <source>Название категории сборки не может быть пустым</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">The build category name cannot be empty</target>
+      </trans-unit>
+      <trans-unit id="cee0deff4cea7560995885389df08f7a">
+        <source>Название категории сборки слишком длинное</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">The build category name is too long</target>
+      </trans-unit>
+      <trans-unit id="46514778b19861536361927923c0a04b">
+        <source>Slug категории не может быть пустым</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">The category slug cannot be empty</target>
+      </trans-unit>
+      <trans-unit id="00e5393af0cb7fec53f00f0cda28bdca">
+        <source>Slug категории слишком длинный</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">The category slug is too long</target>
+      </trans-unit>
+      <trans-unit id="4e8a45cad05d68d4116296c414fc38ac">
+        <source>Slug: только латиница, цифры и дефис</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Slug: Latin characters, numbers, and hyphens only</target>
+      </trans-unit>
+      <trans-unit id="47e1d1191994f9fdfab4c2ed4c862df9">
+        <source>Категория сборки с таким именем уже есть</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">A build category with that name already exists</target>
+      </trans-unit>
+      <trans-unit id="40f2d804e6a57731b51fd9fb1ad017a0">
+        <source>Некорректные id новостей для пары</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Invalid news IDs for a pair</target>
+      </trans-unit>
+      <trans-unit id="047ec8ba71534cae4952b649f7823556">
+        <source>Нельзя задать тип связи новости самой к себе</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">You cannot set the relationship type of a news item to itself</target>
+      </trans-unit>
+      <trans-unit id="fdb72d4fca6271f518ebddd3ce1bceaa">
+        <source>Контекстная новость не входит в сборку</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Contextual news is not included in the build</target>
+      </trans-unit>
+      <trans-unit id="0b57703ee301fe60630a607e84e2d864">
+        <source>Целевая новость не входит в сборку</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">The target news item is not included in the build</target>
+      </trans-unit>
+      <trans-unit id="e5e4dbbfbbb71eba666bbc3368158858">
+        <source>Тип связи должен быть из каталога</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">The connection type must be from the catalog</target>
+      </trans-unit>
+      <trans-unit id="ca3e24c4a9d62676fb348f605e21a1fa">
+        <source>Некорректный id новости для связей</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Invalid news ID for links</target>
+      </trans-unit>
+      <trans-unit id="a4851da089e01b97d87d1284717bb03b">
+        <source>Не удалось сопоставить temp_key сборки</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Unable to match the build's temp_key</target>
+      </trans-unit>
+      <trans-unit id="47a9606dba8dc616ab611d9e6bae31ae">
+        <source>Взаимосвязь между новостями</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">The Relationship Between News Stories</target>
+      </trans-unit>
+      <trans-unit id="6cfff539a39a7ced31d046ca282675df">
+        <source>Панель</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Panel</target>
+      </trans-unit>
+      <trans-unit id="0de733bff24bb8215fb1f0cc839d8db3">
+        <source>История изменений</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Change History</target>
+      </trans-unit>
+      <trans-unit id="8632c8dc9f5894f26504166dbef2f8ca">
+        <source>Выполняем запрос, пожалуйста подождите…</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Processing your request. Please wait…</target>
+      </trans-unit>
+      <trans-unit id="449e2d4a3b48241469c80f2bba7430cb">
+        <source>Конфликт правил</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Conflict of Rules</target>
+      </trans-unit>
+      <trans-unit id="3e12f74b6801ac50749942860f887f2f">
+        <source>Для категории активно несколько правил автоматизации. Запустить Automate вручную?</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">There are several automation rules active for this category. Should I run Automate manually?</target>
+      </trans-unit>
+      <trans-unit id="987b33c664dce148f1d17f6eb9ab3e79">
+        <source>Отмена</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Cancel</target>
+      </trans-unit>
+      <trans-unit id="2b02caddb199f024c4a10c37660db0a1">
+        <source>Выбрать</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Select</target>
+      </trans-unit>
+      <trans-unit id="62c3712945bac3538ba1ab194d8584f7">
+        <source>Новая сборка</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">New Build</target>
+      </trans-unit>
+      <trans-unit id="0d8199c0f716acdcd26d7d68fde34e9f">
+        <source>Переименовать сборку</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Rename the build</target>
+      </trans-unit>
+      <trans-unit id="d197000ba72d7c44aff7fa9c5c748cb3">
+        <source>Удалить сборку</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Delete the build</target>
+      </trans-unit>
+      <trans-unit id="27f29af2c6e43ab78e21d5fd34bdccfe">
+        <source>Удалить сборку и все её элементы?</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Do you want to delete the assembly and all its components?</target>
+      </trans-unit>
+      <trans-unit id="862419e60d8d51b69c2dd3e92a62560d">
+        <source>Удалить элемент</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Delete an item</target>
+      </trans-unit>
+      <trans-unit id="3e5f4caf2d207db3742eb1b7f36d193f">
+        <source>Убрать новость из сборки?</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Remove this news item from the compilation?</target>
+      </trans-unit>
+      <trans-unit id="bfa69666508cb0a77af2d50cecb330c4">
+        <source>Комментарий к связи</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Comment on the connection</target>
+      </trans-unit>
+      <trans-unit id="773ede1bf549051bdedfbb53aee2c3ec">
+        <source>Нет другой сборки для копирования</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">There is no other build to copy</target>
+      </trans-unit>
+      <trans-unit id="d6b6a70fcfd204773fab238da718b9e3">
+        <source>Копировать в сборку</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Copy to Build</target>
+      </trans-unit>
+      <trans-unit id="0d7f2e6b488cda48bf1565301d6bc1ed">
+        <source>Сборка</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Assembly</target>
+      </trans-unit>
+      <trans-unit id="971e19cb27786de35eefcd6208c38e14">
+        <source>Поиск новости</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Search for news</target>
+      </trans-unit>
+      <trans-unit id="dd9463bd5d0c650b468fc5d6cfa1073c">
+        <source>Закрыть</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Close</target>
+      </trans-unit>
+      <trans-unit id="137a8e839393218064a76f6464718a9f">
+        <source>— без типа (подавить auto) —</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">— no type (suppress auto) —</target>
+      </trans-unit>
+      <trans-unit id="345805b88b9ca1e189fa11ea817e5666">
+        <source>Тип</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Type</target>
+      </trans-unit>
+      <trans-unit id="0fb00587803d0857d8c15d7242d121ee">
+        <source>— без категории —</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">— Uncategorized —</target>
+      </trans-unit>
+      <trans-unit id="c95a1e2de00ee86634e177aecca00aed">
+        <source>Категория</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Category</target>
+      </trans-unit>
+      <trans-unit id="fe594a2ff4fb2f104f609475fdcb23f4">
+        <source>Новый тип связи</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">A New Type of Communication</target>
+      </trans-unit>
+      <trans-unit id="3cabce20e1f667c271e30b9b1f7c349c">
+        <source>Переименовать тип</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Rename Type</target>
+      </trans-unit>
+      <trans-unit id="5961316f38c040b146f1e933110c2133">
+        <source>Удалить тип</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Delete Type</target>
+      </trans-unit>
+      <trans-unit id="a929ff7cfa788f4c510ec8007d1ebde0">
+        <source>Удалить тип связи?</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Delete the connection type?</target>
+      </trans-unit>
+      <trans-unit id="804fc3e6b1e44c9cd649ba8954544607">
+        <source>Нет правил</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">There are no rules</target>
+      </trans-unit>
+      <trans-unit id="6820fd2010d99edeb37f2e72ad21bab7">
+        <source>Нет активных правил для категории этой сборки.</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">There are no active rules for this build's category.</target>
+      </trans-unit>
+      <trans-unit id="e0aa021e21dddbd6d8cecec71e9cf564">
+        <source>OK</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">OK</target>
+      </trans-unit>
+      <trans-unit id="7452a0f0be5b76acd0388a5b1afd06d1">
+        <source>Правило</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Rule</target>
+      </trans-unit>
+      <trans-unit id="7bff28af24f8e817f0fed89213c6ab7f">
+        <source>Режим</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Mode</target>
+      </trans-unit>
+      <trans-unit id="a12a344098dd6bef589d20fb067576ad">
+        <source>Preserve (сохранить ручные типы)</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Preserve (Keep Manual Types)</target>
+      </trans-unit>
+      <trans-unit id="0d8bc119f401020df5a0c6a95210737a">
+        <source>Full reset (перезаписать всё)</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Full reset (overwrite everything)</target>
+      </trans-unit>
+      <trans-unit id="d8c4840d12cb2bc0ac590000033c3493">
+        <source>⚡ Automate</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">⚡ Automate</target>
+      </trans-unit>
+      <trans-unit id="2ae9b9166beca9e95faa99f111881bfc">
+        <source>Запустить</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Run</target>
+      </trans-unit>
+      <trans-unit id="f8f24756613d2ba745d1e6ab04732a3b">
+        <source>Новая категория сборки</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">New Build Category</target>
+      </trans-unit>
+      <trans-unit id="1130c31f1d851875428dd95f40bdab66">
+        <source>Переименовать категорию</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Rename a category</target>
+      </trans-unit>
+      <trans-unit id="ec8d7d6e3b724a73cb4925f44378f8ba">
+        <source>Slug категории</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Category slug</target>
+      </trans-unit>
+      <trans-unit id="2f7a20c8d5c47c82dc6a8652e00d5865">
+        <source>Удалить категорию</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Delete Category</target>
+      </trans-unit>
+      <trans-unit id="49819e00d4db4108c25d5b3a5fb4a349">
+        <source>Удалить категорию? У сборок type_id сбросится в «без категории».</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Delete the category? For builds, the `type_id` will be reset to "uncategorized."</target>
+      </trans-unit>
+      <trans-unit id="fb14cfcd8a32de60f5dd76b2ec684313">
+        <source>Правила автоматизации для категории</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Automation Rules for the Category</target>
+      </trans-unit>
+      <trans-unit id="2f42511fb57f4a9b63070d80736f3e51">
+        <source>Добавить линейное</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Add a line</target>
+      </trans-unit>
+      <trans-unit id="c5286ff26ebb98f7b0246ef0815d4900">
+        <source>Добавить правило</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Add a rule</target>
+      </trans-unit>
+      <trans-unit id="89d69a9a488a6f7fd6236c00c67ed928">
+        <source>Загрузка…</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Download…</target>
+      </trans-unit>
+      <trans-unit id="6d29f82e70ad6406cb74af667f46ffef">
+        <source>Правил пока нет</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">There are no rules yet</target>
+      </trans-unit>
+      <trans-unit id="c3b7690800772938c974a855d65979cd">
+        <source>выкл</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">off</target>
+      </trans-unit>
+      <trans-unit id="47e2436e5560837160a70c64466ea22b">
+        <source>Изменить</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Edit</target>
+      </trans-unit>
+      <trans-unit id="d04c646a9f242b117902116a585fbc47">
+        <source>Выкл</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Off</target>
+      </trans-unit>
+      <trans-unit id="574f7b2e6bd9819c4079bf3a7864ec0e">
+        <source>Вкл</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">On</target>
+      </trans-unit>
+      <trans-unit id="2ae0a0e422cf89b9723012faa8932e18">
+        <source>Линейное правило</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">The Linear Rule</target>
+      </trans-unit>
+      <trans-unit id="e6361ce0dc2fa89027bbd7ba3c86b9da">
+        <source>Линейная</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Linear</target>
+      </trans-unit>
+      <trans-unit id="ec1b16cce91118305f5f316e75bbb089">
+        <source>Линейное правило создано</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">A linear rule has been created</target>
+      </trans-unit>
+      <trans-unit id="896e5b200b98428b5b8df7caa7da0f51">
+        <source>Открыть редактор условий?</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Open the condition editor?</target>
+      </trans-unit>
+      <trans-unit id="1028ca26f1d8ea8464640a375b4c743e">
+        <source>Позже</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Later</target>
+      </trans-unit>
+      <trans-unit id="e946df6c55054b21acc3a34853fef684">
+        <source>Открыть</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Open</target>
+      </trans-unit>
+      <trans-unit id="82a8500d3b7c5aa7829ba62d7c35c4ca">
+        <source>Удалить правило</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Delete rule</target>
+      </trans-unit>
+      <trans-unit id="61fb73287ad50961d9badce5e7c5e410">
+        <source>Удалить правило и его условия?</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Delete the rule and its conditions?</target>
+      </trans-unit>
+      <trans-unit id="ad9aa37aede268a820e6504e0d22fe84">
+        <source>Удаляем правило…</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Delete the rule "… "</target>
+      </trans-unit>
+      <trans-unit id="e04af96afe53462f72f39331b209a810">
+        <source>Да</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Yes</target>
+      </trans-unit>
+      <trans-unit id="d0cd2248137f1acac2e79777d856305e">
+        <source>Нет</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">No</target>
+      </trans-unit>
+      <trans-unit id="0cb3400466dd13176d8bb35855fd881e">
+        <source>Не удалось загрузить правила</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Unable to load the rules</target>
+      </trans-unit>
+      <trans-unit id="84998325451483386d5501d712f828d4">
+        <source>Подтверждение</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Confirmation</target>
+      </trans-unit>
+      <trans-unit id="b563b5392d7ed928683ef479b18ab6ae">
+        <source>Ошибка поиска</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Search error</target>
+      </trans-unit>
+      <trans-unit id="4e0476589ac4ba142f575b6c02f245f8">
+        <source>Ошибка Automate</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Automate Error</target>
+      </trans-unit>
+      <trans-unit id="b91d63d790e2f59858020fae61ccb731">
+        <source>Automate выполнен для этой сборки.</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Automate has been completed for this build.</target>
+      </trans-unit>
+      <trans-unit id="e1d08dd59f145584d8af5c85aaa69703">
+        <source>Новость</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">News</target>
+      </trans-unit>
+      <trans-unit id="b324b456c9e555b8830cbbc7741dacdf">
+        <source>Эта новость</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">This news</target>
+      </trans-unit>
+      <trans-unit id="2a175c27106b87befa6777bb1da6bf48">
+        <source>Показать</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Show</target>
+      </trans-unit>
+      <trans-unit id="f9602225ef525e1344c38508fc1aab68">
+        <source>Название новой сборки</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Name of the new build</target>
+      </trans-unit>
+      <trans-unit id="e6795b9acf92679845961d838c7b62f5">
+        <source>Название не может быть пустым</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">The title cannot be empty</target>
+      </trans-unit>
+      <trans-unit id="5c460b56986888a2c088abb02d366a9d">
+        <source>Новость добавлена в черновик сборки</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">The news item has been added to the build draft</target>
+      </trans-unit>
+      <trans-unit id="c828f12acec553506c78260770df1073">
+        <source>Убрать эту новость из сборки в черновике?</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Should this news item be removed from the draft build?</target>
+      </trans-unit>
+      <trans-unit id="68d966cee7e44b74a5589ae0760623e9">
+        <source>Новость заменена в черновике</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">The news item has been replaced in the draft</target>
+      </trans-unit>
+      <trans-unit id="f693e40116079c8ec072209c08570dba">
+        <source>Новость скопирована в черновик</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">The news item has been copied to a draft</target>
+      </trans-unit>
+      <trans-unit id="3b107f4530422ab74db57c096110f36f">
+        <source>Название сборки</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Build Name</target>
+      </trans-unit>
+      <trans-unit id="7821d158f66092e4147c6cffc5168c05">
+        <source>Сборка скопирована в черновик</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">The build has been copied to a draft</target>
+      </trans-unit>
+      <trans-unit id="18cf97ecb2fd49a87af9a12323a7620f">
+        <source>Переименовать можно только новую сборку из черновика</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">You can only rename a new build from a draft.</target>
+      </trans-unit>
+      <trans-unit id="6a73dc4c83a054e956007e96350de1fd">
+        <source>Убрать новость из этой сборки в черновике?</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Should I remove this news item from this draft compilation?</target>
+      </trans-unit>
+      <trans-unit id="666d9bba1559ea68959a3f96d4341a52">
+        <source>Сначала создайте типы связей в модуле Connections</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">First, create connection types in the Connections module</target>
+      </trans-unit>
+      <trans-unit id="100fee7b2a75fd7d3327b7513e16a2d2">
+        <source>Авто-подписи (без пары)</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Auto-signatures (unpaired)</target>
+      </trans-unit>
+      <trans-unit id="6dfb6418b141e08b59a0a6292ca0a856">
+        <source>Раньше focus (последовательная сборка)</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Previously, focus (sequential build)</target>
+      </trans-unit>
+      <trans-unit id="b3dc751d73c9a5bbedea04fbf17da104">
+        <source>Тип из каталога, если у пары нет override и target.sort_order &lt; focus. «—» — без подписи.</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">The type from the catalog, if the pair has no override and target.sort_order &lt; focus. “—” — no caption.</target>
+      </trans-unit>
+      <trans-unit id="f5ea890d69442791a38dbc7934409b1c">
+        <source>Позже focus (последовательная сборка)</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Later focus (sequential build)</target>
+      </trans-unit>
+      <trans-unit id="6d3a2d896d076134eff2e18b45819675">
+        <source>Тип из каталога, если у пары нет override и target.sort_order &gt; focus. «—» — без подписи.</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">The type from the catalog, if the pair has no override and target.sort_order &gt; focus. “—” — no caption.</target>
+      </trans-unit>
+      <trans-unit id="384a5d153dbff4b5f041dafde12dab06">
+        <source>Произвольная сборка</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Arbitrary Assembly</target>
+      </trans-unit>
+      <trans-unit id="8be594e7c85a39e3394bcc82bcddc096">
+        <source>Тип из каталога для не-последовательной сборки без пары. «—» — без подписи.</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">A type from the catalog for non-sequential assembly without a pair. “—” indicates no label.</target>
+      </trans-unit>
+      <trans-unit id="3eecba7ca76d52cab8873e66ec96c3b3">
+        <source>Сводка</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Summary</target>
+      </trans-unit>
+      <trans-unit id="29d6fd98ff6a7ffbed34e26d5008ecd9">
+        <source>Порядок</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Procedure</target>
+      </trans-unit>
+      <trans-unit id="2f884b41fe8b0f3ff6420fb84ce7872c">
+        <source>Фильтр</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Filter</target>
+      </trans-unit>
+      <trans-unit id="be3f69fc0dc3d662ee94f963c2a2b220">
+        <source>Пустой снимок связей</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">An empty snapshot of connections</target>
+      </trans-unit>
+      <trans-unit id="491b5aa12fad35c3c81c8be163eda7a3">
+        <source>Снимок связей: невалидный JSON</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Relationship Snapshot: Invalid JSON</target>
+      </trans-unit>
+      <trans-unit id="683e01f83c22b35ee6b4d89e262c9f65">
+        <source>Админ-дерево сборок и элементов связей</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Administration Tree of Assemblies and Connection Elements</target>
+      </trans-unit>
+      <trans-unit id="4f6bc23d7a7c72598fac99bbd24bbc7c">
+        <source>Создание сборки из админки от исходной новости</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Creating a compilation from the admin panel based on the original news item</target>
+      </trans-unit>
+      <trans-unit id="1f8d0dc25934d1021e5868d30a5d8018">
+        <source>Категории сборок (type_id) и типы связей элементов</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Assembly Categories (type_id) and Element Relationship Types</target>
+      </trans-unit>
+      <trans-unit id="0c84bc442b74922d3b72a24de36649a6">
+        <source>Виджет связей в форме новости админки</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Links widget in the form of an admin panel news item</target>
+      </trans-unit>
+      <trans-unit id="552858c31a238c8a60a932ac82e9408b">
+        <source>Публичный блок на полной новости и при добавлении с сайта</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Public block on the full news article and when added from the website</target>
+      </trans-unit>
+      <trans-unit id="2d5498a07907b94deeee5d3330ed3574">
+        <source>Контекстные направленные пары связей (from→to) с комментарием</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Contextual directed link pairs (from→to) with a comment</target>
+      </trans-unit>
+      <trans-unit id="38d6ce012a404b33ad2ac38e8e284e99">
+        <source>Авто-метки из настроек модуля (типы связей before/after/related)</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Auto-tags from the module settings (link types: before, after, related)</target>
+      </trans-unit>
+      <trans-unit id="36c9375806d1d9cc80c88f51bd733538">
+        <source>Slug категорий сборок и фильтр category в публичном include</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Category slugs for collections and the "category" filter in the public include file</target>
+      </trans-unit>
+      <trans-unit id="f7b222b3a39d8541acd1dcc77147cca7">
+        <source>Флаг «последовательная» сборка (is_sequential)</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">"Sequential" build flag (is_sequential)</target>
+      </trans-unit>
+      <trans-unit id="42326b69ace2035cfe32cd4485098f08">
+        <source>Совместимость с сателлитом «Связи: Автоматизация» (is_manual_override, hooks)</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Compatibility with the "Communications: Automation" satellite (is_manual_override, hooks)</target>
+      </trans-unit>
+      <trans-unit id="0b721d06cdf2ffb0c466ae3893c40b38">
+        <source>Публичная форма добавления: виджет связей вместо подсказки; черновик сохраняется вместе с новостью</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Public submission form: a links widget instead of a tooltip; the draft is saved along with the news article</target>
+      </trans-unit>
+      <trans-unit id="9643173545982bedaf8d442d5b60e000">
+        <source>Публичные шаблоны связей: ЧПУ через {full-link}, заголовок и список всегда видны поисковикам</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Public Link Templates: SEO via {full-link}; the title and list are always visible to search engines</target>
+      </trans-unit>
+      <trans-unit id="e8f955e735073a6b9aaad2c5f1ac8ee6">
+        <source>Неподдерживаемая версия снимка связей</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Unsupported version of the relationship diagram</target>
+      </trans-unit>
+      <trans-unit id="aa407156a8b31d90da91457ed51c17f1">
+        <source>Некорректная структура снимка связей</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Incorrect structure of the relationship diagram</target>
+      </trans-unit>
+      <trans-unit id="4fcdd0cb6923f0ef10653132c9ecb5c1">
+        <source>Некорректная новая сборка в снимке</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">An incorrect new build in the screenshot</target>
+      </trans-unit>
+      <trans-unit id="1b415707fa57cba62401c32f31686f83">
+        <source>Новая сборка: нужны temp_key и название</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">New build: requires a temp_key and a name</target>
+      </trans-unit>
+      <trans-unit id="4f97740c233890b3891a3866ca5fd573">
+        <source>Дубликат temp_key в новых сборках</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Duplicate temp_key in new builds</target>
+      </trans-unit>
+      <trans-unit id="08db141e9393a3a360db0e3ee53a7fb8">
+        <source>Некорректное участие в снимке</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Incorrect inclusion in the photo</target>
+      </trans-unit>
+      <trans-unit id="747bfd1cf2fba8aeb047d4a63b17d32e">
+        <source>Участие: укажите либо collection_id, либо temp_key</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Participation: Specify either the collection_id or the temp_key</target>
+      </trans-unit>
+      <trans-unit id="389cf04bf3c01ab07b0e0c7680d118c2">
+        <source>temp_key не найден в new_collections</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">temp_key was not found in new_collections</target>
+      </trans-unit>
+      <trans-unit id="f5eb897b5e3618638cd2a02a65c0dfa4">
+        <source>Дубликат collection_id в участиях</source>
+        <target state="needs-review-translation" state-qualifier="leveraged-mt">Duplicate collection_id in entries</target>
+      </trans-unit>
+    </body>
+  </file>
+</xliff>
